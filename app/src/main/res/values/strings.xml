@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">一点闹钟</string>
+    <string name="theLunchTime">午休时长：</string>
+    <string name="lunchDefault_50">默认 50</string>
+    <string name="theSleepTime">晚睡时长：</string>
+    <string name="sleepDefault_7">默认 7</string>
+    <string name="alarmContentView">闹钟响铃时显示的文字</string>
+    <string name="alarmContent_Default">死猪，该起床了！</string>
+    <string name="isShockView">是否开启防息损震动提示</string>
+    <string name="todo">TODO</string>
+    <string name="shockAlarm_Introduce">息损：因无法入睡而造成的损失\n开启此项设置将会在目标闹钟前另设一个无铃震动闹钟作为提示，间隔开启后设置。睡眠好的朋友可忽略此项设置。</string>
+    <string name="shockIntervalView">震动间隔（闹铃时长）</string>
+    <string name="shockInterval_Default_30">默认 30</string>
+    <string name="lunchPOT">午休一般时段</string>
+    <string name="lunchPOT_Default">默认：11:00 ~ 16:00</string>
+    <string name="lunchPOT_Introduce">午休一般入睡点所在时段</string>
+    <string name="sleepPOT">晚睡一般时段</string>
+    <string name="sleepPOT_Introduce">晚睡一般入睡点所在时段</string>
+    <string name="sleepPOT_Default">默认：21:30 ~ 2:30</string>
+    <string name="minutes">分钟</string>
+    <string name="hour">小时</string>
+</resources>
