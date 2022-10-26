@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<litepal>
+    <dbname value="yidianAlarm" />
+
+    <version value="1" />
+
+    <list>
+        <mapping class="com.example.yidianClock.model.LunchAlarm" />
+        <mapping class="com.example.yidianClock.model.SleepAlarm" />
+    </list>
+</litepal>

@@ -37,9 +37,24 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.0'
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation files('libs/litepal-2.0.0-src.jar')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     implementation 'com.guolindev.permissionx:permissionx:1.7.1'
+    debugImplementation 'com.guolindev.glance:glance:1.1.0'
+
+//    //配置节点，将lifecycle-viewmodel依赖移除，防止重复类异常
+//    configurations {
+//        all {
+//            exclude group: 'androidx.lifecycle', module: 'lifecycle-viewmodel'
+//        }
+//    }
+
+    //指定两者强制使用所有依赖项的最新版本
+    def lifecycle_version = "2.5.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+
 }
