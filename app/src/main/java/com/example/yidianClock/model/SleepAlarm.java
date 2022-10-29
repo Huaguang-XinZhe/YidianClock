@@ -11,7 +11,7 @@ public class SleepAlarm extends LitePalSupport {
 
     private String sleepStart = "21:30";
     private String sleepEnd = "2:30";
-    private int sleepShockInterval = 40;
+    private int sleepShockInterval = 50;
     private boolean isJustShockOn = true;
     private String beforeTimeStr = "7:00";
 

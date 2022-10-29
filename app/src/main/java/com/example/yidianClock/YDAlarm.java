@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.TimeZone;
 
 public class YDAlarm {
@@ -46,6 +45,7 @@ public class YDAlarm {
 //    private boolean isRequested = false;
     private LunchAlarm firstLunchAlarm;
     private SleepAlarm firstSleepAlarm;
+    private SharedPreferences sp;
 
     //——————————————————————————————————————————————————————————————————————————————————————
 
@@ -66,13 +66,13 @@ public class YDAlarm {
      * @return 白天返回day，晚上返回night，其他返回null
      */
     public String getStatus() {
-        SharedPreferences sp = context.getSharedPreferences("JustDoOnce", MODE_PRIVATE);
+        sp = context.getSharedPreferences("sp", MODE_PRIVATE);
         // TODO: 2022/10/25
-        if (sp.getBoolean("getStatus", true)) {
+        if (sp.getBoolean("getStatus_justDoOnce", true)) {
             //只在安装完成后执行一次，一切都使用默认值，为防止应用崩溃！
             firstLunchAlarm = new LunchAlarm();
             firstSleepAlarm = new SleepAlarm();
-            sp.edit().putBoolean("getStatus", false).apply();
+            sp.edit().putBoolean("getStatus_justDoOnce", false).apply();
         } else {
             //之后就从数据库中取数据，每设定一次闹钟就取一次（这样能跟得上闹钟参数更新的节奏）
             firstLunchAlarm = LitePal.findFirst(LunchAlarm.class);
@@ -106,13 +106,11 @@ public class YDAlarm {
         boolean isOver = sleepShockTipTP.compareTo(new TimePoint(firstSleepAlarm.getSleepEnd())) >= 0;
         Log.i("YDAlarm", "isOver = " + isOver);
         if (isSetShockTip()) {
-            if (getStatus().equals("night")) {
-                if (!isOver) {
-                    setAlarm(getHour(), getMinutes(), "睡不着就起来干活吧");
-                } else {
-                    Toast.makeText(context, "太晚了，放心躺着吧，就不震动提示了", Toast.LENGTH_SHORT).show();
-                }
-            } else setAlarm(getHour(), getMinutes(), "睡不着就起来干活吧");
+            if (getStatus().equals("night") && isOver) {
+                Toast.makeText(context, "太晚了，放心躺着吧，就不震动提示了", Toast.LENGTH_SHORT).show();
+            } else {
+                set(getHour() + ":" + getMinutes(), "睡不着就起来干活吧");
+            }
         }
     }
 
@@ -158,11 +156,9 @@ public class YDAlarm {
                     isRing() && isBefore()) setRing(false);
             //目标闹钟
             setAlarm(getHour(), getMinutes());
-//            if (!isRequested) {
-//                requestAndSet();
-//            } else {
-//                setAlarm(getHour(), getMinutes());
-//            }
+            sp.edit().putBoolean("isTargetAlarmSet", true).apply();
+            Log.i("TestTag", getHour() + ":" + getMinutes());
+            sp.edit().putString("targetAlarmTime", getHour() + ":" + getMinutes()).apply();
         } else {
             Toast.makeText(context, "现在不在您设置的一般休息时段内，故不设置闹钟", Toast.LENGTH_SHORT).show();
         }
@@ -170,6 +166,7 @@ public class YDAlarm {
 
     /**
      * 其他应用可调用此类的这个方法来设置一般性的闹钟提示
+     * 默认只震动不响铃，默认不打开闹钟列表界面（不管闲娱限止）
      * @param timeStr 时间字符串
      * @param content 目的或提示
      */
@@ -177,9 +174,19 @@ public class YDAlarm {
         String[] timeArr = timeStr.split(":");
         int hour = Integer.parseInt(timeArr[0]);
         int minutes = Integer.parseInt(timeArr[1]);
-        //只震动不响铃
-        setRing(false);
-        setAlarm(hour, minutes, content);
+
+        Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM);
+        intent.putExtra(AlarmClock.EXTRA_HOUR, hour);
+        intent.putExtra(AlarmClock.EXTRA_MINUTES, minutes);
+        intent.putExtra(AlarmClock.EXTRA_MESSAGE, content);
+        //设置闹钟响铃时震动
+        intent.putExtra(AlarmClock.EXTRA_VIBRATE, true);
+        //设置闹钟时不显示系统闹钟界面
+        intent.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+        //无铃声
+        intent.putExtra(AlarmClock.EXTRA_RINGTONE, AlarmClock.VALUE_RINGTONE_SILENT);
+
+        context.startActivity(intent);
     }
 
     /**
@@ -187,6 +194,7 @@ public class YDAlarm {
      */
     public void setLimitAlarm() {
         updateHAM(60);
+        sp.edit().putString("limitAlarmTime", getHour() + ":" + getMinutes()).apply();
         setRing(true);
         setAlarm(getHour(), getMinutes(), "闲娱限止！");
     }
@@ -205,11 +213,24 @@ public class YDAlarm {
         intent.putExtra(AlarmClock.EXTRA_MESSAGE, content);
         //设置闹钟响铃时震动
         intent.putExtra(AlarmClock.EXTRA_VIBRATE, true);
-        //设置闹钟时不显示系统闹钟界面
-        intent.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+
+        boolean isMoreAndCloseTo = new MyUtils(context).isMoreAndCloseTo(
+                new TimePoint(sp.getString("limitAlarmTime", "0:0")));
+        //设置了闲娱限止且不临近，才会跳转显示
+        if (sp.getBoolean("isLimitAlarmSet", false) && !isMoreAndCloseTo) {
+            Toast.makeText(context, "请手动关闭闲娱限止闹钟", Toast.LENGTH_LONG).show();
+            //非一般性场景，但为了尽可能地引导准确，顺便设置一下
+            sp.edit().putBoolean("isTargetAlarmSet", false).apply();
+        } else {
+            //设置闹钟时不显示系统闹钟界面
+            intent.putExtra(AlarmClock.EXTRA_SKIP_UI, true);
+        }
+        //不管显不显示，都设为false
+        sp.edit().putBoolean("isLimitAlarmSet", false).apply();
         if (!isRing) {
             intent.putExtra(AlarmClock.EXTRA_RINGTONE, AlarmClock.VALUE_RINGTONE_SILENT);
         }
+
         context.startActivity(intent);
     }
 
@@ -234,6 +255,14 @@ public class YDAlarm {
     }
 
     /**
+     * 打开闹钟列表
+     */
+    public void showAlarm() {
+        Intent intent = new Intent(AlarmClock.ACTION_SHOW_ALARMS);
+        context.startActivity(intent);
+    }
+
+    /**
      * 根据类型和更新hour和minutes的值
      * @param timeLength 时间长度，包括午休和晚睡的restTime和震动提示的interval
      */
@@ -252,7 +281,10 @@ public class YDAlarm {
         float theDecimalPart = timeLength - theIntegerPart;
         //根据类型更新值，一个是hour，一个是restMinutes
         if (timeLength < 12) {
-            hour = currentHour + theIntegerPart;
+            int addHour = currentHour + theIntegerPart;
+            if (addHour >= 24) {
+                hour = addHour - 24;
+            } else hour = addHour;
             restMinutes = (int) (60 * theDecimalPart);
         } else {
             hour = currentHour;

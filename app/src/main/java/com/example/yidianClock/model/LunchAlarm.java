@@ -3,14 +3,14 @@ package com.example.yidianClock.model;
 import org.litepal.crud.LitePalSupport;
 
 public class LunchAlarm extends LitePalSupport {
-    private int lunchTime = 50;
+    private int lunchTime = 45;
     private String content = "别睡太长，晚上睡不着就芭比Q了";
-    private boolean isSetShockTip = true;
+    private boolean isSetShockTip = false;
     private boolean isSetTask = true;
     private boolean isRing = true;
 
-    private String lunchStart = "11:00";
-    private String lunchEnd = "17:00";
+    private String lunchStart = "10:30";
+    private String lunchEnd = "16:30";
 
 
     public int getLunchShockInterval() {

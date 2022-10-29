@@ -19,4 +19,10 @@
     <string name="sleepPOT_Default">默认：21:30 ~ 2:30</string>
     <string name="minutes">分钟</string>
     <string name="hour">小时</string>
+    <string name="tv_cancel">取消</string>
+    <string name="choose_the_time_to_fall_asleep">入睡点所在时段选择</string>
+    <string name="tv_confirm">确定</string>
+    <string name="tv_begin">起始点</string>
+    <string name="to">至</string>
+    <string name="tv_over">结束点</string>
 </resources>

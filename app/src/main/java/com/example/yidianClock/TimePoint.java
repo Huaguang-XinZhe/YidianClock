@@ -1,46 +1,38 @@
 package com.example.yidianClock;
 
 public class TimePoint implements Comparable<TimePoint> {
-    String timeStr;
-//    boolean isNextDay;
-
-//    public TimePoint(String timeStr, boolean isNextDay) {
-//        this.timeStr = timeStr;
-//        this.isNextDay = isNextDay;
-//    }
+    private int hour;
+    private int minutes;
 
     public TimePoint(String timeStr) {
-//        this(timeStr, false);
-        this.timeStr = timeStr;
+        String[] timeArr = timeStr.split(":");
+        setHour(Integer.parseInt(timeArr[0]));
+        setMinutes(Integer.parseInt(timeArr[1]));
     }
-
-
 
     @Override
     public int compareTo(TimePoint o) {
-        String[] thisTimeArr = timeStr.split(":");
-        int thisHour = Integer.parseInt(thisTimeArr[0]);
-        int thisMinutes = Integer.parseInt(thisTimeArr[1]);
-        String[] otherTimeArr = o.timeStr.split(":");
-        int otherHour = Integer.parseInt(otherTimeArr[0]);
-        int otherMinutes = Integer.parseInt(otherTimeArr[1]);
-
-        //根据是否是第二天的时间来设置比较hour
-//        if (!isNextDay) {
-//            hour = thisHour;
-//        } else {
-//            hour = thisHour + 24;
-//        }
         //若为次日凌晨，则更新this和other的hour值
-        int hour1 = updateHour(thisHour);
-        int hour2 = updateHour(otherHour);
-
+        int thisHour = updateHour(getHour());
+        int otherHour = updateHour(o.getHour());
         //开始比较
-        if (hour1 > hour2) {
+        if (thisHour > otherHour) {
             return 1;
-        } else if (hour1 == hour2) {
-            return thisMinutes - otherMinutes;
+        } else if (thisHour == otherHour) {
+            return getMinutes() - o.getMinutes();
         } else return -1;
+    }
+
+    /**
+     * 比较两个TimePoint，看前边那个比后边那个多几分钟
+     * @param o 传入的TimePoint对象
+     * @return 返回为正，就是答案；返回为负，就说明前边那个TimePoint比较小
+     */
+    public int moreMinutes(TimePoint o) {
+        if (this.compareTo(o) >= 0) {
+            return this.getMinutes() - o.getMinutes();
+        }
+        return -1;
     }
 
     /**
@@ -57,5 +49,21 @@ public class TimePoint implements Comparable<TimePoint> {
         if (isNextDay(originalHour)) {
             return originalHour + 24;
         } else return originalHour;
+    }
+
+    public int getHour() {
+        return hour;
+    }
+
+    public void setHour(int hour) {
+        this.hour = hour;
+    }
+
+    public int getMinutes() {
+        return minutes;
+    }
+
+    public void setMinutes(int minutes) {
+        this.minutes = minutes;
     }
 }

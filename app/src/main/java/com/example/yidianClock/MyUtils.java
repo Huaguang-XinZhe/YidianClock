@@ -1,5 +1,8 @@
 package com.example.yidianClock;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,6 +10,27 @@ import java.util.Locale;
 import java.util.Objects;
 
 public class MyUtils {
+    private final Context context;
+
+    public MyUtils(Context context) {
+        this.context = context;
+    }
+
+    public static String getCurrentTime() {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.CHINESE);
+        return format.format(new Date());
+    }
+
+    /**
+     * 判断当前时间是否大于或等于目标时间，并且与目标时间临近（10分钟以内）
+     * @param targetTP 目标时间，TimePoint类型
+     * @return true 为临近
+     */
+    public boolean isMoreAndCloseTo(TimePoint targetTP) {
+        //计算当前时间比目标闹钟的时间多几分钟
+        int moreMinutes = new TimePoint(getCurrentTime()).moreMinutes(targetTP);
+        return moreMinutes >= 0 && moreMinutes < 10;
+    }
 //    private TimePoint[] lunchPOT = {new TimePoint("11:00"), new TimePoint("16:00")};
 //    private TimePoint[] sleepPOT = {new TimePoint("21:30"), new TimePoint("02:30")};
 //    /**
