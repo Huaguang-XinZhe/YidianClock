@@ -2,6 +2,8 @@ package com.example.yidianClock;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +32,17 @@ public class MyUtils {
         //计算当前时间比目标闹钟的时间多几分钟
         int moreMinutes = new TimePoint(getCurrentTime()).moreMinutes(targetTP);
         return moreMinutes >= 0 && moreMinutes < 10;
+    }
+
+    /**
+     * 隐藏软键盘
+     * @param v View对象
+     */
+    public void hideSoftInput(View v) {
+        InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (manager != null) {
+            manager.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 //    private TimePoint[] lunchPOT = {new TimePoint("11:00"), new TimePoint("16:00")};
 //    private TimePoint[] sleepPOT = {new TimePoint("21:30"), new TimePoint("02:30")};

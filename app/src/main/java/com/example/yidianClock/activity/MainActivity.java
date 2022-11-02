@@ -51,7 +51,12 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        mainBinding.lunchPOTLayout.setOnClickListener(v -> MyPicker.getInstance(this).setAndShow());
+//        mainBinding.lunchPOTLayout.setOnClickListener(v -> MyPicker.getInstance(this).setAndShow());
+        //主页闹钟图片，点击跳转到系统闹钟列表
+        mainBinding.alarmHomeImage.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SettingActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override

@@ -2,7 +2,7 @@ package com.example.yidianClock.model;
 
 import org.litepal.crud.LitePalSupport;
 
-public class LunchAlarm extends LitePalSupport {
+public class LunchAlarm extends LitePalSupport{
     private int lunchTime = 45;
     private String content = "别睡太长，晚上睡不着就芭比Q了";
     private boolean isSetShockTip = false;

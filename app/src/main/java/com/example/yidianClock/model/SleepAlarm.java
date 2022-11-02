@@ -3,8 +3,8 @@ package com.example.yidianClock.model;
 import org.litepal.crud.LitePalSupport;
 
 public class SleepAlarm extends LitePalSupport {
-    private float sleepTime = 7.5f;
-    private String content = "别拿省思当借口赖着了啊，那是你干这事的地儿吗？";
+    private float sleepTime = 7;
+    private String content = "又是元气满满的一天";
     private boolean isSetShockTip = true;
     private boolean isSetTask = true;
     private boolean isRing = true;

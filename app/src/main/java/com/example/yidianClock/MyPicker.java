@@ -12,28 +12,53 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.example.yidianClock.model.LunchAlarm;
+import com.example.yidianClock.model.SleepAlarm;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+
+import org.litepal.LitePal;
 
 public class MyPicker {
     private final Context context;
+    private final boolean isNight;
     private BottomSheetDialog bottomSheetDialog;
     private int startHour = 10;
     private int startMinute = 30;
     private int endHour = 16;
     private int endMinute = 30;
     private boolean isStartSet = false;
+    private OnConfirm confirm;
 
-    private MyPicker(Context context) {
+    public MyPicker(Context context, boolean isNight) {
         this.context = context;
+        this.isNight = isNight;
     }
-    @SuppressLint("StaticFieldLeak")
-    private static MyPicker myPicker;
-    //实现单例
-    public static MyPicker getInstance(Context context) {
-        if (myPicker == null) {
-            myPicker = new MyPicker(context);
-        }
-        return myPicker;
+
+    //声明属于该类的自定义接口
+    public interface OnConfirm {
+        void doIt();
+    }
+
+    //    private MyPicker(Context context, boolean isNight) {
+//        this.context = context;
+//        this.isNight = isNight;
+//    }
+//    @SuppressLint("StaticFieldLeak")
+//    private static MyPicker myPicker;
+//    //实现单例
+//    public static MyPicker getInstance(Context context, boolean isNight) {
+//        if (myPicker == null) {
+//            myPicker = new MyPicker(context, isNight);
+//        }
+//        return myPicker;
+//    }
+
+    /**
+     * 这是供外部调用的方法，传入接口对象
+     * @param confirm OnConfirm接口对象
+     */
+    public void setOnConfirm(OnConfirm confirm) {
+        this.confirm = confirm;
     }
 
     /**
@@ -58,6 +83,9 @@ public class MyPicker {
 
         //在TimePicker启动的时候预设时间
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            //根据类型更新预设时间
+            updateDefaultTime();
+            //设置到picker
             startTimePicker.setHour(startHour);
             startTimePicker.setMinute(startMinute); //设置当前分（0-59）
             endTimePicker.setHour(endHour);
@@ -76,7 +104,11 @@ public class MyPicker {
             isStartSet = true;
 
             //根据用户设置的起始点，重新预设结束点
-            setEndHour(getStartHour() + 5);
+            int hour = getStartHour() + 5;
+            if (hour >= 24) {
+                hour -= 24;
+            }
+            setEndHour(hour);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 endTimePicker.setHour(getEndHour());
             }
@@ -87,8 +119,12 @@ public class MyPicker {
             endMinute = minute;
 
             //如果用户没设置起始点，一开始就来设置结束点的话，那就倒推预设起始点
+            int hour = getEndHour() - 5;
+            if (hour < 0) {
+                hour += 24;
+            }
             if (!isStartSet) {
-                setStartHour(getEndHour() - 5);
+                setStartHour(hour);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     startTimePicker.setHour(getStartHour());
                 }
@@ -105,12 +141,60 @@ public class MyPicker {
                 Toast.makeText(context, "结束时间小于开始时间，请重新选择", Toast.LENGTH_SHORT).show();
             }
 
-            Log.e("开始时间：",startHour +":"+startMinute );
-            Log.e("结束时间：",endHour +":"+endMinute);
-
             bottomSheetDialog.dismiss();
+
+            //供外部实现
+            if (confirm != null) {
+                confirm.doIt();
+            }
         });
 
+    }
+
+    /**
+     * 根据一般时段的类型更新预设时间，直接从数据库取值
+     */
+    private void updateDefaultTime() {
+        LunchAlarm firstLunchAlarm = LitePal.findFirst(LunchAlarm.class);
+        SleepAlarm firstSleepAlarm = LitePal.findFirst(SleepAlarm.class);
+        String[] startTimeArr;
+        String[] endTimeArr;
+
+        if (isNight) {
+            startTimeArr = firstSleepAlarm.getSleepStart().split(":");
+            endTimeArr = firstSleepAlarm.getSleepEnd().split(":");
+        } else {
+            //尽管有默认值也得明确设置，否则就会数据错乱。因为值在设置isNight块时就已经改变了
+            startTimeArr = firstLunchAlarm.getLunchStart().split(":");
+            endTimeArr = firstLunchAlarm.getLunchEnd().split(":");
+        }
+
+        startHour = Integer.parseInt(startTimeArr[0]);
+        startMinute = Integer.parseInt(startTimeArr[1]);
+        endHour = Integer.parseInt(endTimeArr[0]);
+        endMinute = Integer.parseInt(endTimeArr[1]);
+    }
+
+    /**
+     * 获取用户设置好的时段字符串
+     * @return 时段字符串，如：21:30 ~ 2:30
+     */
+    public String getPOT() {
+        String start;
+        String end;
+
+        if (getStartMinute() == 0) {
+            start = getStartHour() + ":00";
+        } else {
+            start = getStartHour() + ":30";
+        }
+        if (getEndMinute() == 0) {
+            end = getEndHour() + ":00";
+        } else {
+            end = getEndHour() + ":30";
+        }
+
+        return start + " ~ " + end;
     }
 
     /**
@@ -129,6 +213,10 @@ public class MyPicker {
             minutePicker.setMinValue(0);
             minutePicker.setMaxValue(1);
             minutePicker.setDisplayedValues(displayArr);
+
+            //使分钟部分转动，小时部分不转
+            minutePicker.setOnValueChangedListener(null);
+
         }
     }
 

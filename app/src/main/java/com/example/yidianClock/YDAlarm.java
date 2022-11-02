@@ -100,11 +100,8 @@ public class YDAlarm {
      */
     public void setShockTip(int interval) {
         updateHAM(interval);
-        Log.i("YDAlarm", getHour() + ":" + getMinutes());
         TimePoint sleepShockTipTP = new TimePoint(getHour() + ":" + getMinutes());
-        Log.i("YDAlarm", firstSleepAlarm.getSleepEnd());
         boolean isOver = sleepShockTipTP.compareTo(new TimePoint(firstSleepAlarm.getSleepEnd())) >= 0;
-        Log.i("YDAlarm", "isOver = " + isOver);
         if (isSetShockTip()) {
             if (getStatus().equals("night") && isOver) {
                 Toast.makeText(context, "太晚了，放心躺着吧，就不震动提示了", Toast.LENGTH_SHORT).show();
