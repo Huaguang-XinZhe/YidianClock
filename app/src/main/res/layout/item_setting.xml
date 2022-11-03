@@ -7,7 +7,8 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="10dp"
-    app:cardCornerRadius="10dp">
+    app:cardCornerRadius="10dp"
+    android:focusable="true">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
@@ -67,9 +68,10 @@
                 android:gravity="center_horizontal"
                 android:maxLength="3"
                 android:autofillHints=""
-                android:inputType="number" />
+                android:inputType="numberDecimal" />
 
             <TextView
+                android:id="@+id/timeUnit_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:text="@string/minutes"
@@ -101,10 +103,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/alarmContent_Default"
-            android:maxLength="15"
+            android:maxLength="20"
             android:textColor="@color/green_set_value"
-            android:layout_marginStart="25dp"
-            android:layout_marginEnd="25dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
             android:textSize="20sp"
             android:gravity="center"
             android:autofillHints=""
@@ -169,7 +171,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            >
+            android:visibility="gone">
 
             <RelativeLayout
                 android:id="@+id/alarmTask_layout"
@@ -201,7 +203,7 @@
 
 
                 <ToggleButton
-                    android:id="@+id/isSetTaskButton"
+                    android:id="@+id/isTaskSet_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="false"
@@ -246,7 +248,7 @@
                     android:text="@string/shockAlarm_Introduce"/>
 
                 <ToggleButton
-                    android:id="@+id/isSetShockButton"
+                    android:id="@+id/isShockTipSet_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
@@ -282,7 +284,7 @@
                     <EditText
                         android:id="@+id/shockIntervalEdit"
                         android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:textSize="15sp"
                         android:maxLength="2"
@@ -301,7 +303,7 @@
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <TextView
+                <!--  <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
@@ -330,7 +332,7 @@
                     android:gravity="center"
                     android:textColor="@color/green_set_value"
                     android:autofillHints=""
-                    android:inputType="text" />
+                    android:inputType="text" /> -->
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 

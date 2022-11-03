@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,6 +45,33 @@ public class MyUtils {
             manager.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
+
+//    /**
+//     * 取出小数后边多余的零，但有不影响非零小数
+//     * @param f float类型的小数
+//     * @return 返回去除小数部分的0后得到的字符串
+//     * @deprecated 这个方法还是有问题，7.6会变成7.5，7.2会编程7.1，7.8又不变？
+//     */
+//    public static String getRoundDotStr(float f) {
+//        return new BigDecimal(f).stripTrailingZeros().toPlainString();
+//    }
+
+    /**
+     * 取出小数后边多余的零和小数点，但有不影响非零小数
+     * @param f float类型的小数
+     * @return 返回去除小数部分的0后得到的字符串
+     */
+    public static String getRoundDotStr(float f) {
+        Number value;
+        if (f > Math.floor(f)) {
+            value = f;
+        } else {
+            value = (int) Math.floor(f);
+        }
+        return String.valueOf(value);
+    }
+
+
 //    private TimePoint[] lunchPOT = {new TimePoint("11:00"), new TimePoint("16:00")};
 //    private TimePoint[] sleepPOT = {new TimePoint("21:30"), new TimePoint("02:30")};
 //    /**
@@ -63,6 +91,5 @@ public class MyUtils {
 //        }
 //        return timeMillis;
 //    }
-
 
 }

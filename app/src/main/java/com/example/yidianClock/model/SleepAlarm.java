@@ -3,15 +3,15 @@ package com.example.yidianClock.model;
 import org.litepal.crud.LitePalSupport;
 
 public class SleepAlarm extends LitePalSupport {
-    private float sleepTime = 7;
+    private float restTime = 7;
     private String content = "又是元气满满的一天";
-    private boolean isSetShockTip = true;
-    private boolean isSetTask = true;
+    private boolean isSetShockTip = false;
+    private boolean isSetTask = false;
     private boolean isRing = true;
 
-    private String sleepStart = "21:30";
-    private String sleepEnd = "2:30";
-    private int sleepShockInterval = 50;
+    private String timeStart = "21:30";
+    private String timeEnd = "2:30";
+    private int shockInterval = 50;
     private boolean isJustShockOn = true;
     private String beforeTimeStr = "7:00";
 
@@ -33,19 +33,19 @@ public class SleepAlarm extends LitePalSupport {
     }
 
     public int getSleepShockInterval() {
-        return sleepShockInterval;
+        return shockInterval;
     }
 
     public void setSleepShockInterval(int sleepShockInterval) {
-        this.sleepShockInterval = sleepShockInterval;
+        this.shockInterval = sleepShockInterval;
     }
 
     public float getSleepTime() {
-        return sleepTime;
+        return restTime;
     }
 
     public void setSleepTime(float sleepTime) {
-        this.sleepTime = sleepTime;
+        this.restTime = sleepTime;
     }
 
     public String getContent() {
@@ -81,18 +81,18 @@ public class SleepAlarm extends LitePalSupport {
     }
 
     public String getSleepStart() {
-        return sleepStart;
+        return timeStart;
     }
 
     public void setSleepStart(String sleepStart) {
-        this.sleepStart = sleepStart;
+        this.timeStart = sleepStart;
     }
 
     public String getSleepEnd() {
-        return sleepEnd;
+        return timeEnd;
     }
 
     public void setSleepEnd(String sleepEnd) {
-        this.sleepEnd = sleepEnd;
+        this.timeEnd = sleepEnd;
     }
 }

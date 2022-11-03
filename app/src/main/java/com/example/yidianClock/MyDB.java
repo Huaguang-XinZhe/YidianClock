@@ -6,7 +6,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.example.yidianClock.model.LunchAlarm;
+import com.example.yidianClock.model.MyAlarm;
 import com.example.yidianClock.model.SleepAlarm;
+
+import org.litepal.LitePal;
 
 public class MyDB {
 
@@ -18,4 +21,5 @@ public class MyDB {
             sp.edit().putBoolean("myDBInit_JustDoOnce", false).apply();
         }
     }
+
 }

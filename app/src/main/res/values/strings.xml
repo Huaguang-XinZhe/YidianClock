@@ -3,7 +3,7 @@
     <string name="lunchDefault_50">默认 45</string>
     <string name="sleepDefault_7">默认 7</string>
     <string name="alarmContentView">闹钟响铃提示文本</string>
-    <string name="alarmContent_Default">别睡太长，晚上睡不着就芭比Q了</string>
+    <string name="alarmContent_Default">别睡太长，晚上睡不着就完了</string>
     <string name="isShockView">防息损震动提示</string>
     <string name="todo">TODO</string>
     <string name="shockAlarm_Introduce">息损：因无法入睡而造成的损失\n开启此项设置将会在目标闹钟前另设一个无铃震动闹钟作为提示，间隔开启后设置。睡眠好的朋友可忽略此项设置。</string>

@@ -2,50 +2,48 @@ package com.example.yidianClock.model;
 
 import org.litepal.crud.LitePalSupport;
 
-public class LunchAlarm extends LitePalSupport{
-    private int lunchTime = 45;
-    private String content = "别睡太长，晚上睡不着就芭比Q了";
+public class LunchAlarm extends LitePalSupport {
+    private float restTime = 45;
+    private String content = "别睡太长，晚上睡不着就完了";
     private boolean isSetShockTip = false;
-    private boolean isSetTask = true;
+    private boolean isSetTask = false;
     private boolean isRing = true;
+    private int shockInterval = 30;
 
-    private String lunchStart = "10:30";
-    private String lunchEnd = "16:30";
+    private String timeStart = "10:30";
+    private String timeEnd = "16:30";
 
 
     public int getLunchShockInterval() {
-        return lunchShockInterval;
+        return shockInterval;
     }
 
     public void setLunchShockInterval(int lunchShockInterval) {
-        this.lunchShockInterval = lunchShockInterval;
+        this.shockInterval = lunchShockInterval;
     }
 
-    private int lunchShockInterval = 30;
-
-
     public String getLunchStart() {
-        return lunchStart;
+        return timeStart;
     }
 
     public String getLunchEnd() {
-        return lunchEnd;
+        return timeEnd;
     }
 
     public void setLunchStart(String lunchStart) {
-        this.lunchStart = lunchStart;
+        this.timeStart = lunchStart;
     }
 
     public void setLunchEnd(String lunchEnd) {
-        this.lunchEnd = lunchEnd;
+        this.timeEnd = lunchEnd;
     }
 
-    public int getLunchTime() {
-        return lunchTime;
+    public float getLunchTime() {
+        return restTime;
     }
 
     public void setLunchTime(int lunchTime) {
-        this.lunchTime = lunchTime;
+        this.restTime = lunchTime;
     }
 
     public String getContent() {

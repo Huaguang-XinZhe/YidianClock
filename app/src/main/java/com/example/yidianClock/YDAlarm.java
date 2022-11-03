@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 
 import com.example.yidianClock.model.LunchAlarm;
+import com.example.yidianClock.model.MyAlarm;
 import com.example.yidianClock.model.SleepAlarm;
 
 import org.litepal.LitePal;
@@ -127,23 +128,17 @@ public class YDAlarm {
     public void setFinally() {
         if (getStatus() != null) {
             boolean isNight = getStatus().equals("night");
-            if (isNight) {
-                //从晚睡表中取值，然后赋给该类的实例变量
-                setRestTime(firstSleepAlarm.getSleepTime());
-                setContent(firstSleepAlarm.getContent());
-                setSetShockTip(firstSleepAlarm.isSetShockTip());
-                setSetTask(firstSleepAlarm.isSetTask());
-                setRing(firstSleepAlarm.isRing());
-                setInterval(firstSleepAlarm.getSleepShockInterval());
-            } else {
-                //从午休表中取值，然后赋给该类的实例变量
-                setRestTime(firstLunchAlarm.getLunchTime());
-                setContent(firstLunchAlarm.getContent());
-                setSetShockTip(firstLunchAlarm.isSetShockTip());
-                setSetTask(firstLunchAlarm.isSetTask());
-                setRing(firstLunchAlarm.isRing());
-                setInterval(firstLunchAlarm.getLunchShockInterval());
-            }
+            //从数据库取值，设置闹钟
+            MyAlarm myAlarm = new MyAlarm(isNight);
+            myAlarm.getDataFromDB();
+
+            setRestTime(myAlarm.getRestTime());
+            setContent(myAlarm.getAlarmContent());
+            setSetShockTip(myAlarm.isShockTipSet());
+            setSetTask(myAlarm.isTaskSet());
+            setRing(myAlarm.isRing());
+            setInterval(myAlarm.getShockInterval());
+
             //震动闹钟
             setShockTip(getInterval());
             //更新hour和minutes
@@ -157,7 +152,7 @@ public class YDAlarm {
             Log.i("TestTag", getHour() + ":" + getMinutes());
             sp.edit().putString("targetAlarmTime", getHour() + ":" + getMinutes()).apply();
         } else {
-            Toast.makeText(context, "现在不在您设置的一般休息时段内，故不设置闹钟", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "现在不在您设置的一般休息时段内，故不设置闹钟", Toast.LENGTH_LONG).show();
         }
     }
 
