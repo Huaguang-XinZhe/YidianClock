@@ -2,6 +2,7 @@ package com.example.yidianClock.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -49,8 +50,8 @@ public class RingAdapter extends RecyclerView.Adapter<RingAdapter.InnerHolder> {
     public void onBindViewHolder(@NonNull InnerHolder holder, int position) {
         //视图数据显示
         holder.itemRB.songNameTv.setText(songsList.get(position).getSongName());
-        holder.itemRB.artistTv.setText(songsList.get(position).getArtist());
         holder.itemRB.selectedRb.setChecked(songsList.get(position).isSelected());
+        holder.itemRB.artistTv.setText(songsList.get(position).getArtist());
 
         if (listener != null) {
             listener.onPerform(holder, position);

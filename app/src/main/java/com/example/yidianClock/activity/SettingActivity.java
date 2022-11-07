@@ -2,15 +2,11 @@ package com.example.yidianClock.activity;
 
 import android.Manifest;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -42,10 +38,7 @@ import com.permissionx.guolindev.PermissionX;
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
-import java.util.HashMap;
 import java.util.Map;
-
-import javax.security.auth.login.LoginException;
 
 public class SettingActivity extends AppCompatActivity {
     private MyPicker picker;
@@ -69,6 +62,7 @@ public class SettingActivity extends AppCompatActivity {
         sp = getSharedPreferences("sp", MODE_PRIVATE);
         //当前铃声Ringtone的Map（获取Ringtone单例的手段）
         Map<Uri, Ringtone> ringtoneMap = new MyHashMap<>();
+        Uri alarmDefaultUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
 
         //创建并设置布局管理器
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -209,7 +203,6 @@ public class SettingActivity extends AppCompatActivity {
                 dialog.setContentView(dialogBinding.getRoot());
 
                 //在显示之前预先从sp取值，设置当前铃声的名称（uri取不到值的话就设为本机默认的闹钟铃声uri）
-                Uri alarmDefaultUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
                 currentRingTitle = sp.getString("currentRingTitle", "系统默认");
                 currentRingUri = Uri.parse(sp.getString("currentRingUri", alarmDefaultUri + ""));
                 dialogBinding.currentRingtoneTV.setText(currentRingTitle);
@@ -229,6 +222,7 @@ public class SettingActivity extends AppCompatActivity {
                     Intent intent = new Intent(this, AlarmRingActivity.class);
                     intent.putExtra("title", "本地铃声");
                     mARLauncher.launch(intent);
+                    Toast.makeText(this, "本铃声戴耳机也会外放，请关注音量", Toast.LENGTH_SHORT).show();
                 });
 
                 //系统铃声的点击监听
@@ -237,6 +231,11 @@ public class SettingActivity extends AppCompatActivity {
                     if (currentRingtone != null && currentRingtone.isPlaying()) {
                         currentRingtone.stop();
                     }
+                    Intent intent = new Intent(this, AlarmRingActivity.class);
+                    intent.putExtra("title", "系统铃声");
+                    mARLauncher.launch(intent);
+                    Toast.makeText(this, "此处厂商似乎做了限制，打开略有延迟", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "本铃声戴耳机也会外放，请关注音量", Toast.LENGTH_SHORT).show();
 //                    //下面这段代码能直接跳转到系统铃声选择界面（包括本地音乐和在线铃声）
 //                    Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
 //                    //加了这句还是有用的，虽然跳转到的界面都一样，但调节音量的时候会显示闹钟图标（表明这是闹钟渠道，由闹钟渠道控制）
@@ -277,6 +276,8 @@ public class SettingActivity extends AppCompatActivity {
                         currentRingtone.stop();
                     }
                     dialogBinding.currentRingtoneTV.setText("无");
+                    currentRingTitle = "无";
+                    dialog.dismiss();
                 });
 
 
@@ -290,14 +291,7 @@ public class SettingActivity extends AppCompatActivity {
                     @Override
                     public void onStateChanged(@NonNull View bottomSheet, int newState) {
                         if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                            Log.i("getSongsList", "dialog收起了！");
-                            //把currentRingUri和currentRingTitle存入sp
-                            sp.edit().putString("currentRingUri", currentRingUri + "").apply();
-                            sp.edit().putString("currentRingTitle", currentRingTitle + "").apply();
-                            //关闭当前铃声的播放
-                            if (currentRingtone != null) {
-                                currentRingtone.stop();
-                            }
+                            stopAndSaveValue();
                         }
                     }
 
@@ -309,14 +303,7 @@ public class SettingActivity extends AppCompatActivity {
 
                 //BottomSheetDialog点击灰黑处或点击返回键使dialog消失的事件监听
                 dialog.setOnDismissListener(dialog1 -> {
-                    Log.i("getSongsList", "消失执行！");
-                    //把currentRingUri和currentRingTitle存入sp
-                    sp.edit().putString("currentRingUri", currentRingUri + "").apply();
-                    sp.edit().putString("currentRingTitle", currentRingTitle + "").apply();
-                    //关闭当前铃声的播放
-                    if (currentRingtone != null) {
-                        currentRingtone.stop();
-                    }
+                    stopAndSaveValue();
                 });
 
             });
@@ -324,6 +311,26 @@ public class SettingActivity extends AppCompatActivity {
 
         });//——————————————————————————from MyAdapter——————————————————————————————————————————————————
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopAndSaveValue();
+        Log.i("getSongsList", "onStop执行！");
+    }
+
+    /**
+     * 停止当前音乐的播放，并将其title、uri保存起来
+     */
+    private void stopAndSaveValue() {
+        //把currentRingUri和currentRingTitle存入sp
+        sp.edit().putString("currentRingUri", currentRingUri + "").apply();
+        sp.edit().putString("currentRingTitle", currentRingTitle + "").apply();
+        //关闭当前铃声的播放
+        if (currentRingtone != null) {
+            currentRingtone.stop();
+        }
     }
 
     /**
@@ -335,11 +342,14 @@ public class SettingActivity extends AppCompatActivity {
             Intent returnIntent = result.getData();
             if (returnIntent != null) {
                 currentRingTitle = returnIntent.getStringExtra("title");
-                currentRingUri = MyUtils.getRealUri(returnIntent.getIntExtra("id", 0));
+                currentRingUri = Uri.parse(returnIntent.getStringExtra("songsUriStr"));
+                String[] positionMapStrArr = returnIntent.getStringExtra("positionMapStr").split("_");
+                //返回过来就存进去
+                sp.edit().putInt("currentRingPosition", Integer.parseInt(positionMapStrArr[1])).apply();
+                sp.edit().putString("currentRingFrom", positionMapStrArr[0]).apply();
+                //更新当前铃声的title
                 dialogBinding.currentRingtoneTV.setText(currentRingTitle);
             }
-        } else {
-            Toast.makeText(this, "铃声设置失败", Toast.LENGTH_SHORT).show();
         }
     }
 

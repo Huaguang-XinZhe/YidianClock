@@ -6,21 +6,22 @@ import org.litepal.crud.LitePalSupport;
 public class Song extends LitePalSupport {
     String songName;
     String artist;
+    Uri songsUri;
     int id;
     boolean isSelected;
 
-    public Song(String songName, String artist, int id) {
+    public Song(String songName, String artist, Uri songsUri) {
         this.songName = songName;
         this.artist = artist;
-        this.id = id;
+        this.songsUri = songsUri;
     }
 
-    public int getId() {
-        return id;
+    public Uri getSongsUri() {
+        return songsUri;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setSongsUri(Uri songsUri) {
+        this.songsUri = songsUri;
     }
 
     public boolean isSelected() {
