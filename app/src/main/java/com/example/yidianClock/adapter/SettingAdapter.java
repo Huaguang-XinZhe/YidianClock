@@ -1,8 +1,7 @@
-package com.example.yidianClock;
+package com.example.yidianClock.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,12 +15,17 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.yidianClock.MyUtils;
+import com.example.yidianClock.R;
 import com.example.yidianClock.databinding.ItemSettingBinding;
 import com.example.yidianClock.model.MyAlarm;
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.InnerHolder> {
+public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHolder> {
     private final Context context;
-    private OnListener listener;
+
+    public SettingAdapter(Context context) {
+        this.context = context;
+    }
 
     //在类里边声明自己的接口
     public interface OnListener {
@@ -29,9 +33,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.InnerHolder> {
         void onPerform(InnerHolder holder, int position);
     }
 
-    public MyAdapter(Context context) {
-        this.context = context;
-    }
+    private OnListener listener;
 
     /**
      * 设置点击监听器

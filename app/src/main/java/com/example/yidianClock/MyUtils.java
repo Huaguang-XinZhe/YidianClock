@@ -1,9 +1,22 @@
 package com.example.yidianClock;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.Ringtone;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -22,6 +35,20 @@ public class MyUtils {
     public static String getCurrentTime() {
         SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.CHINESE);
         return format.format(new Date());
+    }
+
+    /**
+     * 使用闹钟渠道来控制铃声
+     * @param ringtone Ringtone对象
+     */
+    public void setAlarmControl(Activity activity, Ringtone ringtone) {
+        AudioAttributes aa = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .build();
+        ringtone.setAudioAttributes(aa);
+        //这是activity的方法
+        activity.setVolumeControlStream(AudioManager.STREAM_ALARM);
+
     }
 
     /**
@@ -69,6 +96,47 @@ public class MyUtils {
             value = (int) Math.floor(f);
         }
         return String.valueOf(value);
+    }
+
+    /**
+     * 通过在媒体库中的id得到其真正的Uri（baseUri已知）
+     * @param id 在媒体库中的id
+     * @return 真正的Uri
+     */
+    public static Uri getRealUri(int id) {
+        Uri baseUri = Uri.parse("content://media/external_primary/audio/media");
+        return Uri.withAppendedPath(baseUri, "" + id);
+    }
+
+    /**
+     * 给定一个File文件，先转换为绝对路径，靠着这个路径去获取本机媒体数据库中本图像对应的id，进而在基uri的基础上加上id，得到目标Uri
+     * 如果该图像文件真实存在，但本机的媒体库中又没有，那就将这个文件插入保存其中，insert成功的话，会返回一个Uri
+     * 反之，如果该文件根本不存在，那就返回null
+     * @param imageFile 图像的File对象
+     * @return 可能为null
+     */
+    public Uri getImageContentUri(Context context, java.io.File imageFile) {
+        String filePath = imageFile.getAbsolutePath();
+
+        Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Images.Media._ID }, MediaStore.Images.Media.DATA + "=? ",
+                new String[] { filePath }, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID));
+            Uri baseUri = Uri.parse("content://media/external/images/media");
+            cursor.close();
+            return Uri.withAppendedPath(baseUri, "" + id);
+        } else {
+            if (imageFile.exists()) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DATA, filePath);
+                return context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            } else {
+                return null;
+            }
+
+        }
     }
 
 

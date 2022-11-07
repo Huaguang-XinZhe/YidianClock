@@ -1,6 +1,16 @@
 package com.example.yidianClock.activity;
 
+import android.Manifest;
 import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -8,44 +18,69 @@ import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.yidianClock.MyAdapter;
+import com.example.yidianClock.MyHashMap;
 import com.example.yidianClock.MyPicker;
 import com.example.yidianClock.MyUtils;
+import com.example.yidianClock.R;
+import com.example.yidianClock.adapter.SettingAdapter;
 import com.example.yidianClock.databinding.ActivitySettingBinding;
+import com.example.yidianClock.databinding.DialogRingSelectedBinding;
 import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.SleepAlarm;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.permissionx.guolindev.PermissionX;
 
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.security.auth.login.LoginException;
 
 public class SettingActivity extends AppCompatActivity {
-    private ActivitySettingBinding settingBinding;
     private MyPicker picker;
     private MyUtils utils;
+    String currentRingTitle;
+    Uri currentRingUri;
+    Ringtone currentRingtone;
+    DialogRingSelectedBinding dialogBinding;
     private final ContentValues values = new ContentValues();
+    SharedPreferences sp;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        settingBinding = ActivitySettingBinding.inflate(getLayoutInflater());
+        ActivitySettingBinding settingBinding = ActivitySettingBinding.inflate(getLayoutInflater());
         setContentView(settingBinding.getRoot());
 
         RecyclerView recyclerView = settingBinding.settingRv;
+
+        //sp初始化，不能放在实例变量处初始化，会引发空指针异常（可能是context当时还为空）
+        sp = getSharedPreferences("sp", MODE_PRIVATE);
+        //当前铃声Ringtone的Map（获取Ringtone单例的手段）
+        Map<Uri, Ringtone> ringtoneMap = new MyHashMap<>();
 
         //创建并设置布局管理器
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
         //创建并设置adapter
-        MyAdapter adapter = new MyAdapter(this);
+        SettingAdapter adapter = new SettingAdapter(this);
         recyclerView.setAdapter(adapter);
+
+        //ActivityResultLauncher对象创建，并实现点击本地铃声或系统铃声的回调监听
+        ActivityResultLauncher<Intent> mARLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), this::parseResult);
 
         //以下代码在recyclerView绑定加载的时候会加载，所以，调用方法的对象在一开始就不能为空————————————————————————
         adapter.setOnListener((holder, position) -> {
@@ -166,16 +201,175 @@ public class SettingActivity extends AppCompatActivity {
                 }
             });
 
-        });
+            //铃声图像点击监听
+            holder.bellImage.setOnClickListener(v -> {
+                //创建BottomSheetDialog，并将布局加载到其中
+                BottomSheetDialog dialog = new BottomSheetDialog(this);
+                dialogBinding = DialogRingSelectedBinding.inflate(getLayoutInflater());
+                dialog.setContentView(dialogBinding.getRoot());
 
-        //——————————————————————————from MyAdapter——————————————————————————————————————————————————
+                //在显示之前预先从sp取值，设置当前铃声的名称（uri取不到值的话就设为本机默认的闹钟铃声uri）
+                Uri alarmDefaultUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
+                currentRingTitle = sp.getString("currentRingTitle", "系统默认");
+                currentRingUri = Uri.parse(sp.getString("currentRingUri", alarmDefaultUri + ""));
+                dialogBinding.currentRingtoneTV.setText(currentRingTitle);
 
+                //显示
+                dialog.show();
+
+                //请求存储空间权限（READ_EXTERNAL_STORAGE）
+                requestPermission();
+
+                //本地铃声的点击监听，跳转到AlarmRingActivity
+                dialogBinding.localRingtoneTv.setOnClickListener(v1 -> {
+                    //如果当前铃声在播放，停止它然后再执行本项目的操作
+                    if (currentRingtone != null && currentRingtone.isPlaying()) {
+                        currentRingtone.stop();
+                    }
+                    Intent intent = new Intent(this, AlarmRingActivity.class);
+                    intent.putExtra("title", "本地铃声");
+                    mARLauncher.launch(intent);
+                });
+
+                //系统铃声的点击监听
+                dialogBinding.systemRingtoneTv.setOnClickListener(v1 -> {
+                    //如果当前铃声在播放，停止它然后再执行本项目的操作
+                    if (currentRingtone != null && currentRingtone.isPlaying()) {
+                        currentRingtone.stop();
+                    }
+//                    //下面这段代码能直接跳转到系统铃声选择界面（包括本地音乐和在线铃声）
+//                    Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+//                    //加了这句还是有用的，虽然跳转到的界面都一样，但调节音量的时候会显示闹钟图标（表明这是闹钟渠道，由闹钟渠道控制）
+//                    intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
+//                    startActivity(intent);
+                });
+
+                //当前铃声布局块的点击监听，播放、停止铃声
+                dialogBinding.currentRingtoneLayout.setOnClickListener(v1 -> {
+                    if (!dialogBinding.currentRingtoneTV.getText().equals("无")) {
+                        //由于点击铃声图标的时候就从sp中取currentRingUri的值（没有就默认系统闹钟uri），所以不可能为空
+                        ringtoneMap.put(currentRingUri, RingtoneManager.getRingtone(this, currentRingUri));
+                        Log.i("getSongsList", "ringtoneMap = " + ringtoneMap);
+                        currentRingtone = ringtoneMap.get(currentRingUri);
+                        Log.i("getSongsList", "currentRingtone = " + currentRingtone);
+                        assert currentRingtone != null;
+//                        //使用闹钟渠道来控制音量。注意！这行代码竟然会影响下面if-else块的执行！会是if部分无法执行，直接跳到else块！！！！
+//                        MyUtils.setAlarmControl(SettingActivity.this, currentRingtone);
+                        if (currentRingtone.isPlaying()) {
+                            Log.i("getSongsList", "当前铃声正在播放，停止它！");
+                            currentRingtone.stop();
+                            dialogBinding.displayIV.setImageResource(R.drawable.play);
+                        } else {
+                            //该方法调用一次就会重新播放一次，原播放不会受到影响，多铃声同时进行。
+                            //播放会在后台进行，只有当调用程序的进程结束时播放才会停止，Activity销毁不受影响。
+                            //仅会完整的播放一次。
+                            currentRingtone.play();
+                            dialogBinding.displayIV.setImageResource(R.drawable.pause);
+                        }
+                    }
+
+                });
+
+                //无区块的点击监听
+                dialogBinding.noBellTv.setOnClickListener(v1 -> {
+                    //如果当前铃声在播放，停止它然后再执行本项目的操作
+                    if (currentRingtone != null && currentRingtone.isPlaying()) {
+                        currentRingtone.stop();
+                    }
+                    dialogBinding.currentRingtoneTV.setText("无");
+                });
+
+
+                //BottomSheetDialog的行为监听
+                //先获取BottomSheetBehavior对象
+                assert dialogBinding != null;
+                BottomSheetBehavior<View> behavior = BottomSheetBehavior.from((View) dialogBinding.getRoot().getParent());
+//                BottomSheetBehavior<LinearLayoutCompat> behavior = BottomSheetBehavior.from(dialogBinding.bottomLayout);
+                behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                    //以下两个回调只有在BottomSheetDialog滑动隐藏的时候才会执行，直接点击灰黑处隐藏不会执行
+                    @Override
+                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                        if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                            Log.i("getSongsList", "dialog收起了！");
+                            //把currentRingUri和currentRingTitle存入sp
+                            sp.edit().putString("currentRingUri", currentRingUri + "").apply();
+                            sp.edit().putString("currentRingTitle", currentRingTitle + "").apply();
+                            //关闭当前铃声的播放
+                            if (currentRingtone != null) {
+                                currentRingtone.stop();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                        //滑动回调
+                    }
+                });
+
+                //BottomSheetDialog点击灰黑处或点击返回键使dialog消失的事件监听
+                dialog.setOnDismissListener(dialog1 -> {
+                    Log.i("getSongsList", "消失执行！");
+                    //把currentRingUri和currentRingTitle存入sp
+                    sp.edit().putString("currentRingUri", currentRingUri + "").apply();
+                    sp.edit().putString("currentRingTitle", currentRingTitle + "").apply();
+                    //关闭当前铃声的播放
+                    if (currentRingtone != null) {
+                        currentRingtone.stop();
+                    }
+                });
+
+            });
+
+
+        });//——————————————————————————from MyAdapter——————————————————————————————————————————————————
+
+    }
+
+    /**
+     * 解析处理返回的ActivityResult，更新当前铃声的ui，并得到其Uri
+     */
+    private void parseResult(ActivityResult result) {
+        if (result.getResultCode() == RESULT_OK) {
+            //获取title和uri
+            Intent returnIntent = result.getData();
+            if (returnIntent != null) {
+                currentRingTitle = returnIntent.getStringExtra("title");
+                currentRingUri = MyUtils.getRealUri(returnIntent.getIntExtra("id", 0));
+                dialogBinding.currentRingtoneTV.setText(currentRingTitle);
+            }
+        } else {
+            Toast.makeText(this, "铃声设置失败", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void requestPermission() {
+        PermissionX.init(this)
+                .permissions(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .explainReasonBeforeRequest()
+                .onExplainRequestReason((scope, deniedList) -> {
+                    scope.showRequestReasonDialog(deniedList, "即将申请的权限是获取本地铃声所必需的条件", "我已明白");
+                })
+                .onForwardToSettings((scope, deniedList) -> {
+                    scope.showForwardToSettingsDialog(deniedList, "您需要去应用程序设置当中手动开启权限", "我已明白");
+                })
+                .request((allGranted, grantedList, deniedList) -> {
+                    if (allGranted) {
+                        //只会执行一次！
+                        if (sp.getBoolean("isRequested", true)) {
+                            Toast.makeText(this, "权限获取成功！", Toast.LENGTH_SHORT).show();
+                            sp.edit().putBoolean("isRequested", false).apply();
+                        }
+                    } else {
+                        Toast.makeText(this, "您已拒绝此权限，无法获取本地铃声！", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     /**
      * 使EditText失去焦点，并隐藏软键盘
      */
-    private void loseFocus(MyAdapter.InnerHolder holder, EditText editText) {
+    private void loseFocus(SettingAdapter.InnerHolder holder, EditText editText) {
         boolean hasFocus = editText.hasFocus();
         if (hasFocus) {
             editText.clearFocus();
@@ -190,8 +384,8 @@ public class SettingActivity extends AppCompatActivity {
      *更新数据库中的checked型数据
      * @param isChanged ToggleButton的状态是否已经改变
      */
-    private void updateChecked(MyAdapter.InnerHolder holder,
-                                  ToggleButton button, String key, boolean isChanged) {
+    private void updateChecked(SettingAdapter.InnerHolder holder,
+                               ToggleButton button, String key, boolean isChanged) {
         boolean isChecked = button.isChecked();
         //更新数据库中对应的数据
         if (isChanged) {
@@ -211,7 +405,7 @@ public class SettingActivity extends AppCompatActivity {
      * @param editText EditText
      * @param key 更新的key
      */
-    private void updateText(MyAdapter.InnerHolder holder, EditText editText, String key) {
+    private void updateText(SettingAdapter.InnerHolder holder, EditText editText, String key) {
         //不能放在里边，里边都是已经改变过了的
         String valueBefore = editText.getText().toString();
         Log.i("Checked", "valueBefore = " + valueBefore);
@@ -238,7 +432,7 @@ public class SettingActivity extends AppCompatActivity {
      * @param holder MyAdapter.InnerHolder对象，要通过它来获取类型
      * @return 返回LitePalSupport的子类，即LunchAlarm类或SleepAlarm类
      */
-    public LitePalSupport getModel(MyAdapter.InnerHolder holder) {
+    public LitePalSupport getModel(SettingAdapter.InnerHolder holder) {
         boolean isNight = holder.restType.getText().equals("晚睡");
         LitePalSupport support;
         if (isNight) {
@@ -252,7 +446,7 @@ public class SettingActivity extends AppCompatActivity {
     /**
      * 更新数据库中相应的数据
      */
-    private void updateData(MyAdapter.InnerHolder holder, ContentValues values) {
+    private void updateData(SettingAdapter.InnerHolder holder, ContentValues values) {
         LitePal.update(getModel(holder).getClass(), values, 1);
     }
 }
