@@ -7,9 +7,11 @@ import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -19,6 +21,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -198,7 +203,7 @@ public class SettingActivity extends AppCompatActivity {
             //铃声图像点击监听
             holder.bellImage.setOnClickListener(v -> {
                 //创建BottomSheetDialog，并将布局加载到其中
-                BottomSheetDialog dialog = new BottomSheetDialog(this);
+                BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.BottomSheetDialog);
                 dialogBinding = DialogRingSelectedBinding.inflate(getLayoutInflater());
                 dialog.setContentView(dialogBinding.getRoot());
 
@@ -206,8 +211,13 @@ public class SettingActivity extends AppCompatActivity {
                 getCurrentRingData(position == 1);
                 dialogBinding.currentRingtoneTV.setText(currentRingTitle);
 
+                //解决BottomSheetDialog设置圆角后带来的底部导航栏透明问题
+//                dialog.getWindow().setNavigationBarColor(getResources().getColor(R.color.white));
+
                 //显示
                 dialog.show();
+
+
 
                 //请求存储空间权限（READ_EXTERNAL_STORAGE）
                 requestPermission();
