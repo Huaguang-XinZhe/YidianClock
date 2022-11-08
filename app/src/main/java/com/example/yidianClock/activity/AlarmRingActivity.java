@@ -137,14 +137,12 @@ public class AlarmRingActivity extends AppCompatActivity {
                     if (position != checkedPositionBefore) {
                         Log.i("getSongsList", "No ! item");
                         Ringtone ringtoneBefore = ringtoneMap.get(checkedPositionBefore);
-                        if (ringtoneBefore != null) {
-                            if (ringtoneBefore.isPlaying()) {
-                                ringtoneBefore.stop();
-                                ringtone.play();
-                            } else {
-                                ringtone.play();
-                            }
+                        Log.i("getSongsList", "ringtoneBefore = " + ringtoneBefore);
+                        if (ringtoneBefore != null && ringtoneBefore.isPlaying()) {
+                            ringtoneBefore.stop();
                         }
+                        //不管上一个ringtone对象是不是空的，本次点击的ringtone都要播放
+                        ringtone.play();
                     } else {
                         Log.i("getSongsList", "点击了同一个item");
                         if (ringtone.isPlaying()) {

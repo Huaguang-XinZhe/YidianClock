@@ -30,6 +30,7 @@ import com.example.yidianClock.adapter.SettingAdapter;
 import com.example.yidianClock.databinding.ActivitySettingBinding;
 import com.example.yidianClock.databinding.DialogRingSelectedBinding;
 import com.example.yidianClock.model.LunchAlarm;
+import com.example.yidianClock.model.MyAlarm;
 import com.example.yidianClock.model.SleepAlarm;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -62,7 +63,6 @@ public class SettingActivity extends AppCompatActivity {
         sp = getSharedPreferences("sp", MODE_PRIVATE);
         //当前铃声Ringtone的Map（获取Ringtone单例的手段）
         Map<Uri, Ringtone> ringtoneMap = new MyHashMap<>();
-        Uri alarmDefaultUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
 
         //创建并设置布局管理器
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -202,9 +202,8 @@ public class SettingActivity extends AppCompatActivity {
                 dialogBinding = DialogRingSelectedBinding.inflate(getLayoutInflater());
                 dialog.setContentView(dialogBinding.getRoot());
 
-                //在显示之前预先从sp取值，设置当前铃声的名称（uri取不到值的话就设为本机默认的闹钟铃声uri）
-                currentRingTitle = sp.getString("currentRingTitle", "系统默认");
-                currentRingUri = Uri.parse(sp.getString("currentRingUri", alarmDefaultUri + ""));
+                //在显示之前预先从数据库取值，设置当前铃声的名称（uri取不到值的话就设为本机默认的闹钟铃声uri）
+                getCurrentRingData(position == 1);
                 dialogBinding.currentRingtoneTV.setText(currentRingTitle);
 
                 //显示
@@ -277,33 +276,36 @@ public class SettingActivity extends AppCompatActivity {
                     }
                     dialogBinding.currentRingtoneTV.setText("无");
                     currentRingTitle = "无";
+                    //数据库也得同步更新
+                    values.put("isRing", false);
+                    updateData(holder, values);
                     dialog.dismiss();
                 });
 
 
-                //BottomSheetDialog的行为监听
-                //先获取BottomSheetBehavior对象
-                assert dialogBinding != null;
-                BottomSheetBehavior<View> behavior = BottomSheetBehavior.from((View) dialogBinding.getRoot().getParent());
-//                BottomSheetBehavior<LinearLayoutCompat> behavior = BottomSheetBehavior.from(dialogBinding.bottomLayout);
-                behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-                    //以下两个回调只有在BottomSheetDialog滑动隐藏的时候才会执行，直接点击灰黑处隐藏不会执行
-                    @Override
-                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                        if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                            stopAndSaveValue();
-                        }
-                    }
-
-                    @Override
-                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                        //滑动回调
-                    }
-                });
+//                //BottomSheetDialog的行为监听
+//                //先获取BottomSheetBehavior对象
+//                assert dialogBinding != null;
+//                BottomSheetBehavior<View> behavior = BottomSheetBehavior.from((View) dialogBinding.getRoot().getParent());
+////                BottomSheetBehavior<LinearLayoutCompat> behavior = BottomSheetBehavior.from(dialogBinding.bottomLayout);
+//                behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+//                    //以下两个回调只有在BottomSheetDialog滑动隐藏的时候才会执行，直接点击灰黑处隐藏不会执行
+//                    @Override
+//                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
+//                        if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+//                            stopAndSaveValue(holder);
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+//                        //滑动回调
+//                    }
+//                });
 
                 //BottomSheetDialog点击灰黑处或点击返回键使dialog消失的事件监听
                 dialog.setOnDismissListener(dialog1 -> {
-                    stopAndSaveValue();
+                    stopAndSaveValue(holder);
                 });
 
             });
@@ -313,20 +315,29 @@ public class SettingActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        stopAndSaveValue();
-        Log.i("getSongsList", "onStop执行！");
+    /**
+     * 根据类型设置当前铃声的名称和uri，取不到就为系统默认
+     * @param isNight 是否点击了晚上那个item中的铃声图标
+     */
+    private void getCurrentRingData(boolean isNight) {
+        MyAlarm myAlarm = new MyAlarm(isNight);
+//        Uri alarmDefaultUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
+        //这里虽然为ringtoneUriStr设定了空字符串的初始值，但取出来的时候依然是null
+        Log.i("getSongsList", "myAlarm.getRingtoneUriStr() = " + myAlarm.getRingtoneUriStr());
+        Log.i("getSongsList", "myAlarm.getRingtoneTitle() = " + myAlarm.getRingtoneTitle());
+        currentRingUri = Uri.parse(myAlarm.getRingtoneUriStr());
+        currentRingTitle = myAlarm.getRingtoneTitle();
     }
 
     /**
      * 停止当前音乐的播放，并将其title、uri保存起来
      */
-    private void stopAndSaveValue() {
-        //把currentRingUri和currentRingTitle存入sp
-        sp.edit().putString("currentRingUri", currentRingUri + "").apply();
-        sp.edit().putString("currentRingTitle", currentRingTitle + "").apply();
+    private void stopAndSaveValue(SettingAdapter.InnerHolder holder) {
+        //把currentRingTitle和currentRingUriStr更新到数据库中
+        values.put("ringtoneTitle", currentRingTitle);
+        values.put("ringtoneUriStr", currentRingUri + "");
+        updateData(holder, values);
+        Toast.makeText(this, "铃声信息更新成功", Toast.LENGTH_SHORT).show();
         //关闭当前铃声的播放
         if (currentRingtone != null) {
             currentRingtone.stop();
@@ -455,6 +466,7 @@ public class SettingActivity extends AppCompatActivity {
 
     /**
      * 更新数据库中相应的数据
+     * @param holder holder里包含position，它能区分item
      */
     private void updateData(SettingAdapter.InnerHolder holder, ContentValues values) {
         LitePal.update(getModel(holder).getClass(), values, 1);

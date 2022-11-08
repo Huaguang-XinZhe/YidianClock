@@ -77,8 +77,9 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
             isNight = true;
         }
 
+        //构建myAlarm实例的时候会自动从数据库中取值然后设定到该类的实例变量中
         MyAlarm myAlarm = new MyAlarm(isNight);
-        myAlarm.getDataFromDB();
+//        myAlarm.getDataFromDB();
 
         holder.restTimeEdit.setText(MyUtils.getRoundDotStr(myAlarm.getRestTime()));
         holder.shockIntervalEdit.setText(String.valueOf(myAlarm.getShockInterval()));

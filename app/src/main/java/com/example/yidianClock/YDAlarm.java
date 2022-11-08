@@ -32,6 +32,7 @@ public class YDAlarm {
     private boolean isSetShockTip = true;
     private boolean isSetTask = true;
     private int interval;
+    private String ringtoneUriStr;
 
     //一般设置（针对的是目标闹钟）————————————————————————————————————————
     private String content;
@@ -137,6 +138,7 @@ public class YDAlarm {
             setSetShockTip(myAlarm.isShockTipSet());
             setSetTask(myAlarm.isTaskSet());
             setRing(myAlarm.isRing());
+            setRingtoneUriStr(myAlarm.getRingtoneUriStr());
             setInterval(myAlarm.getShockInterval());
 
             //震动闹钟
@@ -221,6 +223,9 @@ public class YDAlarm {
         sp.edit().putBoolean("isLimitAlarmSet", false).apply();
         if (!isRing) {
             intent.putExtra(AlarmClock.EXTRA_RINGTONE, AlarmClock.VALUE_RINGTONE_SILENT);
+        } else {
+            //设置铃声
+            intent.putExtra(AlarmClock.EXTRA_RINGTONE, getRingtoneUriStr());
         }
 
         context.startActivity(intent);
@@ -315,6 +320,14 @@ public class YDAlarm {
 
     //——————————————————————————————————————————————————————————————————————————————————————
 
+
+    public String getRingtoneUriStr() {
+        return ringtoneUriStr;
+    }
+
+    public void setRingtoneUriStr(String ringtoneUriStr) {
+        this.ringtoneUriStr = ringtoneUriStr;
+    }
 
     public boolean isSetTask() {
         return isSetTask;
