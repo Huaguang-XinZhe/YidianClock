@@ -22,7 +22,7 @@
             android:layout_marginBottom="10dp">
 
             <TextView
-                android:id="@+id/tv_cancel"
+                android:id="@+id/cancel_TV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
@@ -33,13 +33,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/choose_the_time_to_fall_asleep"
+                android:text="几点前不响铃"
                 android:layout_centerHorizontal="true"
                 android:textSize="18sp"
                 android:textColor="@color/black"/>
 
             <TextView
-                android:id="@+id/tv_confirm"
+                android:id="@+id/confirm_TV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
@@ -50,63 +50,15 @@
 
         </RelativeLayout>
 
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="14sp"
-                    android:text="@string/tv_begin"
-                    android:textColor="@color/black"/>
-                <TimePicker
-                    android:id="@+id/timepicker_start"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#ffffff"
-                    android:timePickerMode="spinner"
-                    />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/to"/>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
-                <TextView
-                    android:textSize="14sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tv_over"
-                    android:textColor="@color/black"/>
-                <TimePicker
-                    android:id="@+id/timepicker_end"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="#ffffff"
-                    android:timePickerMode="spinner"
-                    />
-            </LinearLayout>
-
-        </LinearLayout>
+        <TimePicker
+            android:id="@+id/timePicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#ffffff"
+            android:timePickerMode="spinner"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"/>
 
     </LinearLayout>
-
 
 </RelativeLayout>

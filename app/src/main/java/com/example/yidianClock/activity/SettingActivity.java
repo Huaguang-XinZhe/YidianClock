@@ -1,18 +1,19 @@
 package com.example.yidianClock.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -21,13 +22,11 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.yidianClock.MyHashMap;
+import com.example.yidianClock.MyPeriodPicker;
 import com.example.yidianClock.MyPicker;
 import com.example.yidianClock.MyUtils;
 import com.example.yidianClock.R;
@@ -37,7 +36,6 @@ import com.example.yidianClock.databinding.DialogRingSelectedBinding;
 import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.MyAlarm;
 import com.example.yidianClock.model.SleepAlarm;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.permissionx.guolindev.PermissionX;
 
@@ -47,7 +45,7 @@ import org.litepal.crud.LitePalSupport;
 import java.util.Map;
 
 public class SettingActivity extends AppCompatActivity {
-    private MyPicker picker;
+    private MyPeriodPicker picker;
     private MyUtils utils;
     String currentRingTitle;
     Uri currentRingUri;
@@ -55,7 +53,9 @@ public class SettingActivity extends AppCompatActivity {
     DialogRingSelectedBinding dialogBinding;
     private final ContentValues values = new ContentValues();
     SharedPreferences sp;
+    LinearLayoutManager layoutManager;
     
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +70,7 @@ public class SettingActivity extends AppCompatActivity {
         Map<Uri, Ringtone> ringtoneMap = new MyHashMap<>();
 
         //创建并设置布局管理器
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
         //创建并设置adapter
@@ -95,7 +95,7 @@ public class SettingActivity extends AppCompatActivity {
                     utils.hideSoftInput(holder.itemView);
                     //必须让它再执行一次状态改变的实现（实现不了，isChecked为true的话也应该显示）
                     if (holder.isSetShockButton.isChecked()) {
-                        holder.shockSetLayout.setVisibility(View.VISIBLE);
+                        holder.itemSB.shockInterValSetLayout.setVisibility(View.VISIBLE);
                     }
                     //如果是展开晚睡的蓝色更多，则使recyclerView上移，底部可见
                     if (isNight) {
@@ -126,12 +126,12 @@ public class SettingActivity extends AppCompatActivity {
                 } else {
                     vis = View.GONE;
                 }
-                holder.shockSetLayout.setVisibility(vis);
+                holder.itemSB.shockInterValSetLayout.setVisibility(vis);
             });
 
             //点击一般时段布局块，弹出时段选择器
             holder.potLayout.setOnClickListener(v -> {
-                picker = new MyPicker(this, isNight);
+                picker = new MyPeriodPicker(this, isNight);
                 picker.setAndShow();
                 //TimePicker点击确认
                 picker.setOnConfirm(() -> {
@@ -176,6 +176,41 @@ public class SettingActivity extends AppCompatActivity {
             });
 
 
+            //点击几点前不响铃布局块，开启或关闭
+            // TODO: 2022/11/9
+            holder.itemSB.noRingBeforeLayout.setOnClickListener(v -> {
+                boolean isChecked = holder.itemSB.noRingBeforeButton.isChecked();
+                holder.itemSB.noRingBeforeButton.setChecked(!isChecked);
+            });
+            //点击几点前不响铃的RadioButton
+            holder.itemSB.noRingBeforeButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    //开启状态
+                    //启动时间选择器
+                    MyPicker myPicker = new MyPicker(this);
+                    myPicker.setAndShow();
+
+                    //TimePicker点击确认
+                    myPicker.setOnConfirm(() -> {
+                        //使RadioButton开启
+                        holder.itemSB.noRingBeforeButton.setChecked(true);
+                        //替换titleBelow的值
+                        holder.itemSB.titleBellowTV.setText(myPicker.getTime());
+                        holder.itemSB.titleBellowTV.setTextColor(getResources().getColor(R.color.green_set_value));
+                        //更新到数据库
+                        values.put("beforeTimeStr", myPicker.getTime());
+                        updateData(holder, values);
+                        Toast.makeText(this, "更新成功！", Toast.LENGTH_SHORT).show();
+                    });
+
+                    //TimePicker点击取消
+                    myPicker.setOnCancel(() -> closeOrCancel(holder));
+                } else {
+                    closeOrCancel(holder);
+                }
+            });
+
+
             //restTime失去焦点后更新数据库
             updateText(holder, holder.itemSB.restTimeEdit, "restTime");
 
@@ -216,8 +251,6 @@ public class SettingActivity extends AppCompatActivity {
 
                 //显示
                 dialog.show();
-
-
 
                 //请求存储空间权限（READ_EXTERNAL_STORAGE）
                 requestPermission();
@@ -323,6 +356,20 @@ public class SettingActivity extends AppCompatActivity {
 
         });//——————————————————————————from MyAdapter——————————————————————————————————————————————————
 
+    }
+
+
+    /**
+     * 几点前不响铃部分
+     */
+    @SuppressLint("SetTextI18n")
+    private void closeOrCancel(SettingAdapter.InnerHolder holder) {
+        Log.i("getSongsList", "消极执行！");
+        holder.itemSB.noRingBeforeButton.setChecked(false);
+        holder.itemSB.titleBellowTV.setText("如您的入睡点不稳定，\n且不想在某个时点前的响铃吵醒身边的人，" +
+                "可以开启此项设置，时间到了会长震提醒。");
+        holder.itemSB.titleBellowTV.setTextColor(getResources().getColor(R.color.hintColor));
+        layoutManager.scrollToPositionWithOffset(1, -100);
     }
 
     /**

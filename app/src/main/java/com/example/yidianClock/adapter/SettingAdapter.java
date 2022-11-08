@@ -65,7 +65,7 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
     @Override
     public void onBindViewHolder(@NonNull InnerHolder holder, int position) {
         //数据初始化————————————————————————————————————————————
-        boolean isNight = false;
+        boolean isNight;
         if (position == 1) {
             // TODO: 2022/11/1 此处有待精简
             //晚睡item加载所需
@@ -73,8 +73,13 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
             holder.timeUnit.setText("小时");
             holder.potTitle.setText("晚睡一般时段");
             holder.potIntro.setText("晚睡一般入睡点所在时段");
-
+            holder.itemSB.noRingBeforeLayout.setVisibility(View.VISIBLE);
+            holder.itemSB.lineView.setVisibility(View.VISIBLE);
             isNight = true;
+        } else {
+            holder.itemSB.noRingBeforeLayout.setVisibility(View.GONE);
+            holder.itemSB.lineView.setVisibility(View.GONE);
+            isNight = false;
         }
 
         //构建myAlarm实例的时候会自动从数据库中取值然后设定到该类的实例变量中
@@ -87,6 +92,13 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
         holder.potView.setText(myAlarm.getPotStr());
         holder.isSetShockButton.setChecked(myAlarm.isShockTipSet());
         holder.isSetTaskButton.setChecked(myAlarm.isTaskSet());
+        holder.itemSB.noRingBeforeButton.setChecked(myAlarm.isJustShockOn());
+        if (myAlarm.isJustShockOn()) {
+            holder.itemSB.titleBellowTV.setText(myAlarm.getBeforeTimeStr());
+            holder.itemSB.titleBellowTV.setTextColor(context.getResources().getColor(R.color.green_set_value));
+        }
+
+
         //改变音乐图标
 //        holder.bellImage
 
@@ -122,7 +134,6 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
         public EditText shockIntervalEdit;
         //布局
         public LinearLayoutCompat moreSetLayout;
-        public LinearLayoutCompat shockSetLayout;
         public RelativeLayout potLayout;
         public RelativeLayout alarmTaskLayout;
         public RelativeLayout shockTipLayout;
@@ -149,7 +160,6 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
             bellImage = itemView.findViewById(R.id.bell_image);
             moreSetView = itemView.findViewById(R.id.moreSet_tv);
             moreSetLayout = itemView.findViewById(R.id.moreSet_layout);
-            shockSetLayout = itemView.findViewById(R.id.shockSet_layout);
             potLayout = itemView.findViewById(R.id.pot_layout);
             alarmTaskLayout = itemView.findViewById(R.id.alarmTask_layout);
             shockTipLayout = itemView.findViewById(R.id.shockTip_layout);

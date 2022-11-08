@@ -1,5 +1,6 @@
 package com.example.yidianClock.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -7,10 +8,10 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.yidianClock.MyDB;
-import com.example.yidianClock.MyPicker;
 import com.example.yidianClock.YDAlarm;
 import com.example.yidianClock.databinding.ActivityMainBinding;
+import com.example.yidianClock.model.LunchAlarm;
+import com.example.yidianClock.model.SleepAlarm;
 import com.example.yidianClock.receiver.UnlockReceiver;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding mainBinding;
     private final YDAlarm alarm = new YDAlarm(this);
     private final UnlockReceiver unlockReceiver = new UnlockReceiver();
+    SharedPreferences sp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,8 +27,10 @@ public class MainActivity extends AppCompatActivity {
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
 
+        sp = getSharedPreferences("sp", MODE_PRIVATE);
+
         //创建数据库，并初始化数据。注意！这是耗时操作！！！
-        MyDB.init(this);
+        initDBData();
         alarm.setFinally();
 
         FloatingActionButton fab = mainBinding.fab;
@@ -46,12 +50,11 @@ public class MainActivity extends AppCompatActivity {
             //始终开启
             alarm.setLimitAlarm();
             //将设置闲娱限止的状态存入sp中
-            SharedPreferences sp = getSharedPreferences("sp", MODE_PRIVATE);
             sp.edit().putBoolean("isLimitAlarmSet", true).apply();
             return true;
         });
 
-//        mainBinding.lunchPOTLayout.setOnClickListener(v -> MyPicker.getInstance(this).setAndShow());
+//        mainBinding.lunchPOTLayout.setOnClickListener(v -> MyPeriodPicker.getInstance(this).setAndShow());
         //主页闹钟图片，点击跳转到系统闹钟列表
         mainBinding.alarmHomeImage.setOnClickListener(v -> {
             Intent intent = new Intent(this, SettingActivity.class);
@@ -79,5 +82,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         unregisterReceiver(unlockReceiver);
+    }
+
+    private void initDBData() {
+        if (sp.getBoolean("myDBInit_JustDoOnce", true)) {
+            new LunchAlarm().save();
+            new SleepAlarm().save();
+            sp.edit().putBoolean("myDBInit_JustDoOnce", false).apply();
+        }
     }
 }

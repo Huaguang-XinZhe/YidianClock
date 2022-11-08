@@ -12,6 +12,8 @@ public class MyAlarm {
     boolean isRing;
     String ringtoneUriStr;
     String ringtoneTitle;
+    String beforeTimeStr;
+    boolean isJustShockOn;
     //__________________________________
     private final boolean isNight;
     private LunchAlarm lunch = LitePal.findFirst(LunchAlarm.class);
@@ -38,11 +40,13 @@ public class MyAlarm {
         isTaskSet = isTaskSet2();
         shockInterval = getShockInterval2();
         isRing = isRing2();
-        ringtoneUriStr = getRingtoneUri2();
-        ringtoneTitle = getRingtoneTitle2();
 
         //setting页面需要
         potStr = getTimeStart2() + " ~ " + getTimeEnd2();
+        ringtoneUriStr = getRingtoneUri2();
+        ringtoneTitle = getRingtoneTitle2();
+        beforeTimeStr = getBeforeTimeStr();
+        isJustShockOn = isJustShockOn();
     }
 
     public String getRingtoneTitle2() {
@@ -123,6 +127,22 @@ public class MyAlarm {
         } else {
             return lunch.isRing();
         }
+    }
+
+    public String getBeforeTimeStr() {
+        return sleep.getBeforeTimeStr();
+    }
+
+    public boolean isJustShockOn() {
+        return sleep.isJustShockOn();
+    }
+
+    public void setJustShockOn(boolean justShockOn) {
+        isJustShockOn = justShockOn;
+    }
+
+    public void setBeforeTimeStr(String beforeTimeStr) {
+        this.beforeTimeStr = beforeTimeStr;
     }
 
     public String getRingtoneTitle() {

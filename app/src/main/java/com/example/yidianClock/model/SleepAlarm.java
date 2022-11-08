@@ -13,7 +13,7 @@ public class SleepAlarm extends LitePalSupport {
     private String timeStart = "21:30";
     private String timeEnd = "2:30";
     private int shockInterval = 50;
-    private boolean isJustShockOn = true;
+    private boolean isJustShockOn = false;
     private String beforeTimeStr = "7:00";
 
     public String getRingtoneTitle() {
