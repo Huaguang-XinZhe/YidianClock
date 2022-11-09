@@ -4,10 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.util.Log;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.yidianClock.Flash;
+import com.example.yidianClock.MyUtils;
 import com.example.yidianClock.YDAlarm;
 import com.example.yidianClock.databinding.ActivityMainBinding;
 import com.example.yidianClock.model.LunchAlarm;
@@ -36,14 +43,7 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = mainBinding.fab;
         //fab短按监听
         fab.setOnClickListener(v -> {
-            alarm.set("19:25", "测试！");
-//            alarm.setFinally();
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                alarm.dismissAlarm();
-//            } else {
-//                Toast.makeText(this, "您的手机Android版本过低，无法自动取消闹钟，请到系统闹钟界面手动取消",
-//                        Toast.LENGTH_SHORT).show();
-//            }
+            alarm.setFinally();
         });
         //fab长按监听
         fab.setOnLongClickListener(v -> {
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        //注册解锁和亮屏广播
+        //注册解锁广播
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_USER_PRESENT);
         registerReceiver(unlockReceiver, filter);

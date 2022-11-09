@@ -2,6 +2,8 @@ package com.example.yidianClock;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Instrumentation;
+import android.app.KeyguardManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -11,7 +13,11 @@ import android.media.AudioManager;
 import android.media.Ringtone;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.provider.MediaStore;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -36,6 +42,36 @@ public class MyUtils {
         SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.CHINESE);
         return format.format(new Date());
     }
+
+    /**
+     * 唤醒屏幕（20秒后释放）
+     */
+    public void wakeUp(){
+//        //屏锁管理器
+//        KeyguardManager km= (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+//        KeyguardManager.KeyguardLock kl = km.newKeyguardLock("unLock");
+//        //解锁
+//        kl.disableKeyguard();
+        //获取电源管理器对象
+        Log.i("getSongsList", "wakeUp唤醒执行！");
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        //获取PowerManager.WakeLock对象,后面的参数|表示同时传入两个值,最后的是LogCat里用的Tag
+        @SuppressLint("InvalidWakeLockTag")
+//        PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.ON_AFTER_RELEASE,"bright");
+        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK
+                        | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                        | PowerManager.ON_AFTER_RELEASE,
+                "TestWakeLock"
+        );
+        //点亮屏幕
+        //10分钟后系统将清除唤醒锁
+//        if (!wakeLock.isHeld()) {
+            wakeLock.acquire(10*60*1000L /*10 minutes*/);
+//        }
+        //释放
+        new Handler().postDelayed(wakeLock::release, 10000);
+    }
+
 
     /**
      * 使用闹钟渠道来控制铃声

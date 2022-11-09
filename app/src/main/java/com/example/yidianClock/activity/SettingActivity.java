@@ -11,9 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -26,8 +24,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.yidianClock.MyHashMap;
-import com.example.yidianClock.MyPeriodPicker;
-import com.example.yidianClock.MyPicker;
+import com.example.yidianClock.picker.MyPeriodPicker;
+import com.example.yidianClock.picker.MyPicker;
 import com.example.yidianClock.MyUtils;
 import com.example.yidianClock.R;
 import com.example.yidianClock.adapter.SettingAdapter;

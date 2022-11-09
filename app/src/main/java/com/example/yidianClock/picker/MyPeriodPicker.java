@@ -1,4 +1,4 @@
-package com.example.yidianClock;
+package com.example.yidianClock.picker;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -11,6 +11,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.example.yidianClock.R;
+import com.example.yidianClock.TimePoint;
 import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.SleepAlarm;
 import com.google.android.material.bottomsheet.BottomSheetDialog;

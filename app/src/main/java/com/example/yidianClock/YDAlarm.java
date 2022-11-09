@@ -1,7 +1,11 @@
 package com.example.yidianClock;
 
+import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 
+import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,6 +19,7 @@ import androidx.annotation.RequiresApi;
 import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.MyAlarm;
 import com.example.yidianClock.model.SleepAlarm;
+import com.example.yidianClock.receiver.ManagerAlarmReceiver;
 
 import org.litepal.LitePal;
 
@@ -108,9 +113,37 @@ public class YDAlarm {
             if (getStatus().equals("night") && isOver) {
                 Toast.makeText(context, "太晚了，放心躺着吧，就不震动提示了", Toast.LENGTH_SHORT).show();
             } else {
-                set(getHour() + ":" + getMinutes(), "睡不着就起来干活吧");
+//                set(getHour() + ":" + getMinutes(), "睡不着就起来干活吧");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    setManagerAlarm();
+                }
             }
         }
+    }
+
+    /**
+     * 得到目标时间的Millis表示
+     */
+    public long getTargetTimeMillis() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+        cal.set(Calendar.HOUR_OF_DAY, getHour());
+        cal.set(Calendar.MINUTE, getMinutes());
+        return cal.getTimeInMillis();
+    }
+
+    /**
+     * 用AlarmManager设置震动闪光提示
+     */
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void setManagerAlarm() {
+        Log.i("getSongsList", "ManagerAlarm已设置");
+        AlarmManager manager = (AlarmManager) context.getSystemService(ALARM_SERVICE);
+        //这里只是传入了BroadcastReceiver的实例，并没有注册它
+        Intent intent = new Intent(context, ManagerAlarmReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        //在指定的时间启动提示
+        manager.setExact(AlarmManager.RTC_WAKEUP, getTargetTimeMillis(), pi);
     }
 
     /**
