@@ -14,6 +14,7 @@ import android.view.WindowManager;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.yidianClock.Flash;
+import com.example.yidianClock.ManagerAlarm;
 import com.example.yidianClock.MyUtils;
 import com.example.yidianClock.YDAlarm;
 import com.example.yidianClock.databinding.ActivityMainBinding;
@@ -52,6 +53,13 @@ public class MainActivity extends AppCompatActivity {
             //将设置闲娱限止的状态存入sp中
             sp.edit().putBoolean("isLimitAlarmSet", true).apply();
             return true;
+        });
+
+        //震光提示点击取消
+        mainBinding.shockLightTipTV.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                new ManagerAlarm(this).cancel();
+            }
         });
 
 //        mainBinding.lunchPOTLayout.setOnClickListener(v -> MyPeriodPicker.getInstance(this).setAndShow());

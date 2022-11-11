@@ -98,7 +98,6 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
             holder.itemSB.titleBellowTV.setTextColor(context.getResources().getColor(R.color.green_set_value));
         }
 
-
         //改变音乐图标
 //        holder.bellImage
 

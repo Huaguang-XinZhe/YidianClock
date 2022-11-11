@@ -91,7 +91,7 @@ public class MyPeriodPicker {
             isStartSet = true;
 
             //根据用户设置的起始点，重新预设结束点
-            int hour = getStartHour() + 5;
+            int hour = getStartHour() + 3;
             if (hour >= 24) {
                 hour -= 24;
             }
@@ -106,7 +106,7 @@ public class MyPeriodPicker {
             endMinute = minute;
 
             //如果用户没设置起始点，一开始就来设置结束点的话，那就倒推预设起始点
-            int hour = getEndHour() - 5;
+            int hour = getEndHour() - 3;
             if (hour < 0) {
                 hour += 24;
             }

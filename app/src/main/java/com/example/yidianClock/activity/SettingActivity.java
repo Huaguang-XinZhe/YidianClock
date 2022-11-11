@@ -125,6 +125,9 @@ public class SettingActivity extends AppCompatActivity {
                     vis = View.GONE;
                 }
                 holder.itemSB.shockInterValSetLayout.setVisibility(vis);
+                Log.i("getSongsList", "setOnCheckedChangeListener = " + isChecked);
+                //更新值
+                updateChecked(holder, holder.itemSB.isShockTipSetButton, "isSetShockTip");
             });
 
             //点击一般时段布局块，弹出时段选择器
@@ -144,35 +147,21 @@ public class SettingActivity extends AppCompatActivity {
                 });
             });
 
-
             //点击闹钟任务布局块，开启或关闭，并更新数据库中的数据
             holder.alarmTaskLayout.setOnClickListener(v -> {
                 //改变ToggleButton的状态
                 boolean isTaskChecked = holder.isSetTaskButton.isChecked();
                 holder.isSetTaskButton.setChecked(!isTaskChecked);
                 //更新值
-                updateChecked(holder, holder.itemSB.isTaskSetButton, "isSetTask", false);
+                updateChecked(holder, holder.itemSB.isTaskSetButton, "isSetTask");
             });
-            //点击闹钟任务ToggleButton，同样更新数据库的数据
-            holder.itemSB.isTaskSetButton.setOnClickListener(v -> {
-                updateChecked(holder, holder.itemSB.isTaskSetButton, "isSetTask", true);
-            });
-
 
             //点击震动提示布局块，开启或关闭，并更新数据库中的数据
             holder.shockTipLayout.setOnClickListener(v -> {
                 //改变ToggleButton的状态
                 boolean isShockTipChecked = holder.isSetShockButton.isChecked();
                 holder.isSetShockButton.setChecked(!isShockTipChecked);
-                //更新值
-                updateChecked(holder, holder.itemSB.isShockTipSetButton, "isSetShockTip", false);
             });
-            //点击震动提示ToggleButton，更新数据库中的数据
-            // ToggleButton点击后，其checked状态会立即改变，在其点击事件中获取到的是改变后的状态
-            holder.itemSB.isShockTipSetButton.setOnClickListener(v -> {
-                updateChecked(holder, holder.itemSB.isShockTipSetButton, "isSetShockTip", true);
-            });
-
 
             //点击几点前不响铃布局块，开启或关闭
             // TODO: 2022/11/9
@@ -180,14 +169,13 @@ public class SettingActivity extends AppCompatActivity {
                 boolean isChecked = holder.itemSB.noRingBeforeButton.isChecked();
                 holder.itemSB.noRingBeforeButton.setChecked(!isChecked);
             });
-            //点击几点前不响铃的RadioButton
+            //几点前不响铃状态改变监听
             holder.itemSB.noRingBeforeButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
                     //开启状态
                     //启动时间选择器
                     MyPicker myPicker = new MyPicker(this);
                     myPicker.setAndShow();
-
                     //TimePicker点击确认
                     myPicker.setOnConfirm(() -> {
                         //使RadioButton开启
@@ -198,14 +186,15 @@ public class SettingActivity extends AppCompatActivity {
                         //更新到数据库
                         values.put("beforeTimeStr", myPicker.getTime());
                         updateData(holder, values);
-                        Toast.makeText(this, "更新成功！", Toast.LENGTH_SHORT).show();
                     });
-
                     //TimePicker点击取消
                     myPicker.setOnCancel(() -> closeOrCancel(holder));
                 } else {
                     closeOrCancel(holder);
                 }
+                Log.i("getSongsList", "几点前不响铃状态改变：" + isChecked);
+                //更新数据
+                updateChecked(holder, holder.itemSB.noRingBeforeButton, "isJustShockOn");
             });
 
 
@@ -241,7 +230,11 @@ public class SettingActivity extends AppCompatActivity {
                 dialog.setContentView(dialogBinding.getRoot());
 
                 //在显示之前预先从数据库取值，设置当前铃声的名称（uri取不到值的话就设为本机默认的闹钟铃声uri）
-                getCurrentRingData(position == 1);
+                boolean isRing = getCurrentRingData(position == 1);
+                if (!isRing) {
+                    currentRingTitle = "无";
+                }
+                Log.i("getSongsList", "currentRingTitle = " + currentRingTitle);
                 dialogBinding.currentRingtoneTV.setText(currentRingTitle);
 
                 //解决BottomSheetDialog设置圆角后带来的底部导航栏透明问题
@@ -373,8 +366,9 @@ public class SettingActivity extends AppCompatActivity {
     /**
      * 根据类型设置当前铃声的名称和uri，取不到就为系统默认
      * @param isNight 是否点击了晚上那个item中的铃声图标
+     * @return isRing，是否响铃
      */
-    private void getCurrentRingData(boolean isNight) {
+    private boolean getCurrentRingData(boolean isNight) {
         MyAlarm myAlarm = new MyAlarm(isNight);
 //        Uri alarmDefaultUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
         //这里虽然为ringtoneUriStr设定了空字符串的初始值，但取出来的时候依然是null
@@ -382,6 +376,7 @@ public class SettingActivity extends AppCompatActivity {
         Log.i("getSongsList", "myAlarm.getRingtoneTitle() = " + myAlarm.getRingtoneTitle());
         currentRingUri = Uri.parse(myAlarm.getRingtoneUriStr());
         currentRingTitle = myAlarm.getRingtoneTitle();
+        return myAlarm.isRing();
     }
 
     /**
@@ -458,19 +453,13 @@ public class SettingActivity extends AppCompatActivity {
 
     /**
      *更新数据库中的checked型数据
-     * @param isChanged ToggleButton的状态是否已经改变
      */
     private void updateChecked(SettingAdapter.InnerHolder holder,
-                               ToggleButton button, String key, boolean isChanged) {
+                               ToggleButton button, String key) {
         boolean isChecked = button.isChecked();
+        Log.i("getSongsList", "isChecked = " + isChecked);
         //更新数据库中对应的数据
-        if (isChanged) {
-            //针对ToggleButton的直接点击
-            values.put(key, isChecked);
-        } else {
-            //针对块区的点击
-            values.put(key, !isChecked);
-        }
+        values.put(key, isChecked);
         updateData(holder, values);
         Toast.makeText(this, "更新成功！", Toast.LENGTH_SHORT).show();
     }

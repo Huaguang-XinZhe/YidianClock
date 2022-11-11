@@ -24,14 +24,6 @@ public class SleepAlarm extends LitePalSupport {
         this.ringtoneTitle = ringtoneTitle;
     }
 
-    public float getRestTime() {
-        return restTime;
-    }
-
-    public void setRestTime(float restTime) {
-        this.restTime = restTime;
-    }
-
     public String getRingtoneUriStr() {
         return ringtoneUriStr;
     }

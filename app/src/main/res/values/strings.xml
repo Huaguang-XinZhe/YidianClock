@@ -4,9 +4,9 @@
     <string name="sleepDefault_7">默认 7</string>
     <string name="alarmContentView">闹钟响铃提示文本</string>
     <string name="alarmContent_Default">别睡太长，晚上睡不着就完了</string>
-    <string name="isShockView">防息损震动提示</string>
+    <string name="isShockView">防息损震光提示</string>
     <string name="todo">TODO</string>
-    <string name="shockAlarm_Introduce">息损：因无法入睡而造成的损失\n开启此项设置将会在目标闹钟前另设一个无铃震动闹钟作为提示，间隔开启后设置。睡眠好的朋友可忽略此项设置。</string>
+    <string name="shockAlarm_Introduce">息损：因无法入睡而造成的损失\n开启此项设置将会在目标闹钟前另设一个震光提示（震一次闪三次，建议睡前将手机背放）。\n睡眠一直不错的朋友可以忽略此项设置。</string>
     <string name="shockIntervalView">震动间隔（闹铃时长）</string>
     <string name="shockInterval_Default_30">默认 30</string>
     <string name="lunchPOT">午休一般时段</string>
