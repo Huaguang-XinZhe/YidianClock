@@ -41,8 +41,8 @@ public class EmptyActivity extends AppCompatActivity {
 
         Log.i("getSongsList", "onCreate执行！");
 
-        //唤醒屏幕
-        new MyUtils(this).wakeUp();
+        //保持CPU持续运转
+        new MyUtils(this).wakeUp(2);
 
         //在这里进行震动和闪光提示
         //震动一次
@@ -53,13 +53,13 @@ public class EmptyActivity extends AppCompatActivity {
 //            vibrator.vibrate(1000);
 //        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.EFFECT_TICK),
+            vibrator.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.EFFECT_TICK),
                     new AudioAttributes.Builder()
                             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                             .setUsage(AudioAttributes.USAGE_ALARM)
                             .build());
         } else {
-            vibrator.vibrate(500);
+            vibrator.vibrate(1000);
         }
 
         //闪光三次

@@ -89,9 +89,11 @@ public class SettingActivity extends AppCompatActivity {
                 int vis;
                 if (holder.moreSetLayout.getVisibility() == View.GONE) {
                     vis = View.VISIBLE;
+                    //更多名称变为收起
+                    holder.itemSB.moreSetTv.setText("<< 收起");
                     //展开，收起软键盘
                     utils.hideSoftInput(holder.itemView);
-                    //必须让它再执行一次状态改变的实现（实现不了，isChecked为true的话也应该显示）
+                    //震光提示的间隔设置展开
                     if (holder.isSetShockButton.isChecked()) {
                         holder.itemSB.shockInterValSetLayout.setVisibility(View.VISIBLE);
                     }
@@ -102,6 +104,8 @@ public class SettingActivity extends AppCompatActivity {
                 } else {
                     //只可能是visible
                     vis = View.GONE;
+                    //收起变更多
+                    holder.itemSB.moreSetTv.setText("更多 >>");
                 }
                 holder.moreSetLayout.setVisibility(vis);
             });
@@ -340,6 +344,8 @@ public class SettingActivity extends AppCompatActivity {
                 //BottomSheetDialog点击灰黑处或点击返回键使dialog消失的事件监听
                 dialog.setOnDismissListener(dialog1 -> {
                     stopAndSaveValue(holder);
+                    //刷新焦点item的数据（主要是为了更新铃声图标）
+                    adapter.notifyItemChanged(position);
                 });
 
             });
@@ -381,11 +387,16 @@ public class SettingActivity extends AppCompatActivity {
 
     /**
      * 停止当前音乐的播放，并将其title、uri保存起来
+     * 如果不是无，那就更新isRing
      */
     private void stopAndSaveValue(SettingAdapter.InnerHolder holder) {
         //把currentRingTitle和currentRingUriStr更新到数据库中
         values.put("ringtoneTitle", currentRingTitle);
         values.put("ringtoneUriStr", currentRingUri + "");
+        //根据当前铃声的title更新isRing的值
+        if (!currentRingTitle.equals("无")) {
+            values.put("isRing", true);
+        }
         updateData(holder, values);
         Toast.makeText(this, "铃声信息更新成功", Toast.LENGTH_SHORT).show();
         //关闭当前铃声的播放

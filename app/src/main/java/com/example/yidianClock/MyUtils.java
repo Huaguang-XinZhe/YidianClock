@@ -2,34 +2,24 @@ package com.example.yidianClock;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Instrumentation;
-import android.app.KeyguardManager;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.Process;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-
-import java.math.BigDecimal;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Objects;
 
 public class MyUtils {
     private final Context context;
@@ -44,9 +34,19 @@ public class MyUtils {
     }
 
     /**
-     * 唤醒屏幕（20秒后释放）
+     * 自杀当前进程（即将自己的应用杀死，为了省电）
      */
-    public void wakeUp(){
+    public static void suicide() {
+        //注意，这里必须引用android.os包，不能引用java.lang包
+        int pid = Process.myPid();
+        Log.i("getSongsList", "当前进程的pid = " + pid);
+        Process.killProcess(pid);
+    }
+
+    /**
+     * 唤醒屏幕（interval后释放）
+     */
+    public void wakeUp(int interval){
 //        //屏锁管理器
 //        KeyguardManager km= (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 //        KeyguardManager.KeyguardLock kl = km.newKeyguardLock("unLock");
@@ -64,12 +64,12 @@ public class MyUtils {
                 "TestWakeLock"
         );
         //点亮屏幕
-        //10分钟后系统将清除唤醒锁
+        //1小时内系统将清除唤醒锁
 //        if (!wakeLock.isHeld()) {
-            wakeLock.acquire(10*60*1000L /*10 minutes*/);
+            wakeLock.acquire(60*60*1000L /*60 minutes*/);
 //        }
-        //释放
-        new Handler().postDelayed(wakeLock::release, 10000);
+        //释放（interval延后10秒）
+        new Handler().postDelayed(wakeLock::release, interval * 60*1000L + 10000);
     }
 
 

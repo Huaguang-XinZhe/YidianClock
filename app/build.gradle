@@ -46,7 +46,7 @@ dependencies {
     debugImplementation 'com.guolindev.glance:glance:1.1.0'
 
     //引入RecyclerView的依赖（着实没想到！）
-    implementation 'androidx.recyclerview:recyclerview:1.1.0-beta04'
+    implementation 'androidx.recyclerview:recyclerview:1.3.0-alpha01'
 
 //    //配置节点，将lifecycle-viewmodel依赖移除，防止重复类异常
 //    configurations {

@@ -85,7 +85,6 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
         //构建myAlarm实例的时候会自动从数据库中取值然后设定到该类的实例变量中
         MyAlarm myAlarm = new MyAlarm(isNight);
 //        myAlarm.getDataFromDB();
-
         holder.restTimeEdit.setText(MyUtils.getRoundDotStr(myAlarm.getRestTime()));
         holder.shockIntervalEdit.setText(String.valueOf(myAlarm.getShockInterval()));
         holder.alarmContentEdit.setText(myAlarm.getAlarmContent());
@@ -93,13 +92,24 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
         holder.isSetShockButton.setChecked(myAlarm.isShockTipSet());
         holder.isSetTaskButton.setChecked(myAlarm.isTaskSet());
         holder.itemSB.noRingBeforeButton.setChecked(myAlarm.isJustShockOn());
+        //几点前不响铃
         if (myAlarm.isJustShockOn()) {
             holder.itemSB.titleBellowTV.setText(myAlarm.getBeforeTimeStr());
             holder.itemSB.titleBellowTV.setTextColor(context.getResources().getColor(R.color.green_set_value));
         }
-
-        //改变音乐图标
-//        holder.bellImage
+        //铃声图标
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) holder.bellImage.getLayoutParams();
+        if (myAlarm.isRing()) {
+            holder.bellImage.setImageResource(R.drawable.bell);
+            layoutParams.width = 90;
+            layoutParams.height = 90;
+        } else {
+            holder.bellImage.setImageResource(R.drawable.shock);
+            //图标略显大了些，调小一点（注意，这里的类型必须是 “父类.LayoutParams”）
+            layoutParams.width = 75;
+            layoutParams.height = 75;
+        }
+        holder.bellImage.setLayoutParams(layoutParams);
 
         //传入相关引用，构建环境
         // 这段代码一定能执行，因为SettingActivity的onCreate会先于onBindViewHolder执行

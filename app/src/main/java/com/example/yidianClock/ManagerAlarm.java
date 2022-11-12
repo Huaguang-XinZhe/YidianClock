@@ -37,7 +37,12 @@ public class ManagerAlarm {
     public void set(int interval) {
         long timeMillis = System.currentTimeMillis() + interval * 60*1000L;
         //在指定的时间启动提示
-        manager.setExact(AlarmManager.RTC_WAKEUP, timeMillis, pi);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeMillis, pi);
+        } else {
+            manager.setExact(AlarmManager.RTC_WAKEUP, timeMillis, pi);
+        }
+        Log.i("getSongsList", "震光提示已设置");
         Toast.makeText(context, "震光提示已设置", Toast.LENGTH_SHORT).show();
     }
 

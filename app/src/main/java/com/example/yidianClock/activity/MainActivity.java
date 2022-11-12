@@ -57,9 +57,10 @@ public class MainActivity extends AppCompatActivity {
 
         //震光提示点击取消
         mainBinding.shockLightTipTV.setOnClickListener(v -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                new ManagerAlarm(this).cancel();
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                new ManagerAlarm(this).cancel();
+//            }
+            MyUtils.suicide();
         });
 
 //        mainBinding.lunchPOTLayout.setOnClickListener(v -> MyPeriodPicker.getInstance(this).setAndShow());
