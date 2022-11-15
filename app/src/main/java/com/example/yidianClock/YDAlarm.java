@@ -215,7 +215,7 @@ public class YDAlarm {
         //设置闹钟响铃时震动
         intent.putExtra(AlarmClock.EXTRA_VIBRATE, true);
 
-        boolean isMoreAndCloseTo = new MyUtils(context).isMoreAndCloseTo(
+        boolean isMoreAndCloseTo = MyUtils.getInstance(context).isMoreAndCloseTo(
                 new TimePoint(sp.getString("limitAlarmTime", "0:0")));
         //设置了闲娱限止且不临近，才会跳转显示
         if (sp.getBoolean("isLimitAlarmSet", false) && !isMoreAndCloseTo) {

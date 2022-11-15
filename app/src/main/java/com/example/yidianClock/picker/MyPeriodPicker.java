@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
@@ -78,8 +79,8 @@ public class MyPeriodPicker {
             endTimePicker.setHour(endHour);
             endTimePicker.setMinute(endMinute); //设置当前分（0-59）
             //使分钟部分30分钟，30分钟的显示
-            set30Display(startTimePicker);
-            set30Display(endTimePicker);
+            set30Display(startTimePicker, true);
+            set30Display(endTimePicker, false);
         }
 
         bottomSheetDialog.show();
@@ -89,6 +90,8 @@ public class MyPeriodPicker {
             startHour = hourOfDay;
             startMinute = minute;
             isStartSet = true;
+
+            Log.i("getSongsList", "startHour = " + startHour + "，startMinute = " + startMinute);
 
             //根据用户设置的起始点，重新预设结束点
             int hour = getStartHour() + 3;
@@ -104,6 +107,8 @@ public class MyPeriodPicker {
         endTimePicker.setOnTimeChangedListener((view, hourOfDay, minute) -> {
             endHour = hourOfDay;
             endMinute = minute;
+
+            Log.i("getSongsList", "endHour = " + endHour + "，endMinute = " + endMinute);
 
             //如果用户没设置起始点，一开始就来设置结束点的话，那就倒推预设起始点
             int hour = getEndHour() - 3;
@@ -187,8 +192,9 @@ public class MyPeriodPicker {
     /**
      * 将分钟选择器部分按30分钟间隔显示
      * @param picker TimePicker对象
+     * @param isStartTime 专门为解决分钟转动不触发时间改变问题而设立，用于开始和结束的判断
      */
-    private void set30Display(TimePicker picker) {
+    private void set30Display(TimePicker picker, boolean isStartTime) {
         String[] displayArr = {"00", "30"};
         NumberPicker minutePicker;
         View minute = picker.findViewById(Resources.getSystem().
@@ -200,9 +206,16 @@ public class MyPeriodPicker {
             minutePicker.setMinValue(0);
             minutePicker.setMaxValue(1);
             minutePicker.setDisplayedValues(displayArr);
-
-            //使分钟部分转动，小时部分不转
-            minutePicker.setOnValueChangedListener(null);
+            //使分钟部分转动，小时部分不转（如果直接传入null，将会导致分钟转动不触发时间改变）
+            minutePicker.setOnValueChangedListener((picker1, oldVal, newVal) -> {
+                Log.i("getSongsList", "newVal = " + newVal);
+                //解决分钟转动不触发时间改变监听的问题
+                if (isStartTime) {
+                    startMinute = newVal;
+                } else {
+                    endMinute = newVal;
+                }
+            });
 
         }
     }

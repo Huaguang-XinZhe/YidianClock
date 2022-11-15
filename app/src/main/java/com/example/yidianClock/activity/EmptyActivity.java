@@ -42,7 +42,7 @@ public class EmptyActivity extends AppCompatActivity {
         Log.i("getSongsList", "onCreate执行！");
 
         //保持CPU持续运转
-        new MyUtils(this).wakeUp(2);
+        MyUtils.getInstance(this).wakeUp(2);
 
         //在这里进行震动和闪光提示
         //震动一次

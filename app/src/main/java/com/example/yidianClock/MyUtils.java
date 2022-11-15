@@ -22,10 +22,19 @@ import java.util.Date;
 import java.util.Locale;
 
 public class MyUtils {
+    @SuppressLint("StaticFieldLeak")
+    private static MyUtils myUtils;
     private final Context context;
 
-    public MyUtils(Context context) {
+    private MyUtils(Context context) {
         this.context = context;
+    }
+
+    public static MyUtils getInstance(Context context) {
+        if (myUtils == null) {
+            myUtils = new MyUtils(context);
+        }
+        return myUtils;
     }
 
     public static String getCurrentTime() {

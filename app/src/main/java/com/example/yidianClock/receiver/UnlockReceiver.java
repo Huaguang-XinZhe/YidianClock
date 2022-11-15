@@ -23,7 +23,7 @@ public class UnlockReceiver extends BroadcastReceiver {
         Log.i("TestTag", "解锁啦！");
         SharedPreferences sp = context.getSharedPreferences("sp", Context.MODE_PRIVATE);
         String targetAlarmTime = sp.getString("targetAlarmTime", "0:0");
-        boolean isMoreAndCloseTo = new MyUtils(context).isMoreAndCloseTo(new TimePoint(targetAlarmTime));
+        boolean isMoreAndCloseTo = MyUtils.getInstance(context).isMoreAndCloseTo(new TimePoint(targetAlarmTime));
         //为应对在闲娱限止时段内解锁手机，而引起的列表弹出，故增加一个判断条件
         String limitAlarmTime = sp.getString("limitAlarmTime", "0:0");
         boolean isBeforeLimit = new TimePoint(MyUtils.getCurrentTime())

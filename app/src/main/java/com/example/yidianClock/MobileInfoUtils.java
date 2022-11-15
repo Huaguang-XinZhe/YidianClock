@@ -8,6 +8,8 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
+
 public class MobileInfoUtils {
     Context context;
 //    private SettingDialogPermision dialog_per;
@@ -25,9 +27,10 @@ public class MobileInfoUtils {
     //跳转至授权页面
     public void jumpStartInterface() {
         Intent intent = new Intent();
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Uri myAppUri = Uri.fromParts("package", context.getPackageName(), null);
         try {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            Log.e("getSongsList", "******************当前手机型号为：" + getMobileType());
+            Log.i("getSongsList", "******************当前手机型号为：" + getMobileType());
             ComponentName componentName = null;
             switch (getMobileType()) {
                 case "Xiaomi":  // 红米Note4测试通过
@@ -60,8 +63,10 @@ public class MobileInfoUtils {
                             "com.meizu.safe/.permission.SmartBGActivity");//跳转到后台管理页面
 
                     break;
-                case "OPPO":  // OPPO R8205测试通过
-                    componentName = ComponentName.unflattenFromString("com.oppo.safe/.permission.startup.StartupAppListActivity");
+                case "OPPO":
+//                    componentName = ComponentName.unflattenFromString("com.oplus.battery/com.oplus.powermanager.fuelgaue.PowerControlActivity");
+                    intent.setAction("android.settings.APPLICATION_DETAILS_SETTINGS");
+                    intent.setData(myAppUri);
                     break;
                 case "ulong":  // 360手机 未测试
                     componentName = new ComponentName("com.yulong.android.coolsafe",
@@ -75,7 +80,9 @@ public class MobileInfoUtils {
                     break;
             }
 
-            intent.setComponent(componentName);
+            if (componentName != null) {
+                intent.setComponent(componentName);
+            }
             context.startActivity(intent);
 
 //            if (getMobileType().equals("Xiaomi")) {
@@ -85,10 +92,11 @@ public class MobileInfoUtils {
 //                new SettingOverlayView().show(context);//显示悬浮窗
 //            }
 
-        } catch (Exception e) {//抛出异常就直接打开设置页面
+        } catch (Exception e) {//抛出异常就直接应用详情界面
             Log.e("getSongsList", e.getLocalizedMessage());
-            intent = new Intent(Settings.ACTION_SETTINGS);
-            context.startActivity(intent);
+            //此处必须用全新的intent，否则还有可能会抛出异常
+            Intent mIntent = new Intent(Settings.ACTION_SETTINGS);
+            context.startActivity(mIntent);
         }
     }
 

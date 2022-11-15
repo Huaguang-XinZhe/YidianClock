@@ -3,6 +3,7 @@ package com.example.yidianClock.activity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Ringtone;
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.yidianClock.MobileInfoUtils;
 import com.example.yidianClock.MyHashMap;
 import com.example.yidianClock.picker.MyPeriodPicker;
 import com.example.yidianClock.picker.MyPicker;
@@ -35,6 +37,7 @@ import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.MyAlarm;
 import com.example.yidianClock.model.SleepAlarm;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.permissionx.guolindev.PermissionX;
 
 import org.litepal.LitePal;
@@ -81,7 +84,7 @@ public class SettingActivity extends AppCompatActivity {
 
         //以下代码在recyclerView绑定加载的时候会加载，所以，调用方法的对象在一开始就不能为空————————————————————————
         adapter.setOnListener((holder, position) -> {
-            utils = new MyUtils(this);
+            utils = MyUtils.getInstance(this);
             boolean isNight = holder.restType.getText().equals("晚睡");
 
             //蓝色更多，点击展开或收回
@@ -110,7 +113,7 @@ public class SettingActivity extends AppCompatActivity {
                 holder.moreSetLayout.setVisibility(vis);
             });
 
-            //防息损震动提示，开启展开，关闭收缩（只有状态改变的时候才会执行）
+            //防息损震光提示RadioButton状态改变监听
             holder.isSetShockButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 int vis;
                 if (isChecked) {
@@ -132,6 +135,19 @@ public class SettingActivity extends AppCompatActivity {
                 Log.i("getSongsList", "setOnCheckedChangeListener = " + isChecked);
                 //更新值
                 updateChecked(holder, holder.itemSB.isShockTipSetButton, "isSetShockTip");
+                //在第一次状态改变（开启）时弹出请求自启动弹窗
+                if (sp.getBoolean("isAutoStartRequest", true)) {
+                    new MaterialAlertDialogBuilder(this)
+                            .setTitle("请求自启")
+                            .setMessage("该功能需要允许后台自启动才能正常运行。不过放心，我们只会在您设置的指定的震光间隔到达时才会使用，主要用于唤醒程序，执行震动和闪光提示。\n\n" +
+                                    "其他时候我们不会自启，当然，也没必要自启。这点可以从应用耗电验证（允许自启会增加些许耗电，如果耗电异常，那应用肯定滥用自启，常驻后台）。\n\n" +
+                                    "该提示只会出现一次，如果您拒绝了此请求，下次您要使用该功能之前就必须手动开启（可长按软件图标，跳转到应用详情，耗电管理开启）。\n")
+                            .setPositiveButton("我已明白", (dialog, which) -> {
+                                new MobileInfoUtils(this).jumpStartInterface();
+                            })
+                            .show();
+                    sp.edit().putBoolean("isAutoStartRequest", false).apply();
+                }
             });
 
             //点击一般时段布局块，弹出时段选择器
@@ -141,6 +157,7 @@ public class SettingActivity extends AppCompatActivity {
                 //TimePicker点击确认
                 picker.setOnConfirm(() -> {
                     //更新TextView的值
+                    Log.i("getSongsList", "pot = " + picker.getPOT());
                     holder.potView.setText(picker.getPOT());
                     //更新数据库中对应的数据
                     String[] potArr = picker.getPOT().split(" ~ ");
@@ -167,8 +184,22 @@ public class SettingActivity extends AppCompatActivity {
                 holder.isSetShockButton.setChecked(!isShockTipChecked);
             });
 
+            //震光提示title右侧帮助图标点击监听
+            holder.itemSB.shockLightBugHelpIV.setOnClickListener(v -> {
+                new MaterialAlertDialogBuilder(this)
+                        .setTitle("为什么不正常提示？")
+                        .setMessage("这是由于该应用的自启尚未开启或应用被杀死所致。\n\n" +
+                                "我们希望能一步到位，简化用户的操作，但奈何系统不允许，再加上厂商出于省电方面做出的种种限制，当下的应用想要在后台活动就变得愈加困难，定时提醒逻辑当然也不例外。\n\n" +
+                                "所以，我们需要您授予的自启动权限。\n\n" +
+                                "这会增加些许耗电，但相对微信这样的大户（一安装就默认允许自启，应该是厂商合作的神力）来说就显得微乎其微了。\n\n" +
+                                "我们承诺只在必要时唤醒程序，这一点可以从 App 耗电来验证。\n")
+                        .setPositiveButton("我已明白", (dialog, which) -> {
+                            new MobileInfoUtils(this).jumpStartInterface();
+                        })
+                        .show();
+            });
+
             //点击几点前不响铃布局块，开启或关闭
-            // TODO: 2022/11/9
             holder.itemSB.noRingBeforeLayout.setOnClickListener(v -> {
                 boolean isChecked = holder.itemSB.noRingBeforeButton.isChecked();
                 holder.itemSB.noRingBeforeButton.setChecked(!isChecked);
