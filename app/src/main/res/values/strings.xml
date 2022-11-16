@@ -8,6 +8,8 @@
     <string name="todo">TODO</string>
     <string name="shockAlarm_Introduce">息损：因无法入睡而造成的损失\n开启此项设置将会在目标闹钟前另设一个震光提示（震一次闪三次，建议睡前将手机背放）。\n睡眠一直不错的朋友可以忽略此项设置。</string>
     <string name="shockIntervalView">震光间隔（闹铃时长）</string>
+    <string name="drawer_open">打开抽屉</string>
+    <string name="drawer_close">关闭抽屉</string>
     <string name="shockInterval_Default_30">默认 30</string>
     <string name="lunchPOT">午休一般时段</string>
     <string name="lunchPOT_Default">默认：10:30 ~ 16:30</string>
@@ -30,4 +32,6 @@
     <string name="the_alarm_clock_task">强制闹钟任务</string>
     <string name="more_view"><![CDATA[更多 > >]]></string>
     <string name="_200">走 200 步</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

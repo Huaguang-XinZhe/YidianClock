@@ -45,7 +45,7 @@
                 android:textSize="14sp"
                 android:text="@string/tv_confirm"
                 android:layout_alignParentEnd="true"
-                android:textColor="#AF0F07"
+                android:textColor="@color/green_set_value"
                 tools:ignore="RelativeOverlap" />
 
         </RelativeLayout>
