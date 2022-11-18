@@ -8,7 +8,7 @@ public class LunchAlarm extends LitePalSupport {
     private boolean isSetShockTip = false;
     private boolean isSetTask = false;
     private boolean isRing = true;
-    private int shockInterval = 30;
+    private int shockInterval = 25;
     private String ringtoneUriStr = "content://media/internal/audio/media/2549?title=ringtone_035&canonical=1";
     private String ringtoneTitle = "系统默认";
     private String timeStart = "10:30";

@@ -1,11 +1,7 @@
-package com.example.yidianClock;
+package com.example.yidianClock.alarm;
 
-import static android.content.Context.ALARM_SERVICE;
 import static android.content.Context.MODE_PRIVATE;
 
-import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,10 +12,11 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.yidianClock.utils.TimePoint;
 import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.MyAlarm;
 import com.example.yidianClock.model.SleepAlarm;
-import com.example.yidianClock.receiver.ManagerAlarmReceiver;
+import com.example.yidianClock.utils.MyUtils;
 
 import org.litepal.LitePal;
 
@@ -121,13 +118,31 @@ public class YDAlarm {
     }
 
     /**
-     * 判断更新后的时间是否在仅震动时间之前（只针对晚睡）
+     * 判断晚睡目标闹钟时间是否在指定的特殊时间之前（只针对晚睡）
      * @return true在之前
      */
-    public boolean isBefore() {
+    public boolean isBefore(boolean isNoRingBefore) {
+        String beforeTimeStr;
         TimePoint sleepAlarmTP = new TimePoint(getHour() + ":" + getMinutes());
-        String beforeTimeStr = firstSleepAlarm.getBeforeTimeStr();
+
+        if (isNoRingBefore) {
+            beforeTimeStr = firstSleepAlarm.getBeforeTimeStr_noRingBefore();
+        } else {
+            beforeTimeStr = firstSleepAlarm.getBeforeTimeStr_donGetUp();
+        }
+
         return sleepAlarmTP.compareTo(new TimePoint(beforeTimeStr)) < 0;
+    }
+
+    /**
+     * 推迟晚睡的目标闹钟到指定时间
+     */
+    public void delayTargetTime() {
+        //从数据库中取出指定的几点前不起床时间
+        String[] beforeTimeStrArr = firstSleepAlarm.getBeforeTimeStr_donGetUp().split(":");
+        setHour(Integer.parseInt(beforeTimeStrArr[0]));
+        setMinutes(Integer.parseInt(beforeTimeStrArr[1]));
+        Log.i("getSongsList", "targetTime = " + getHour() + ":" + getMinutes());
     }
 
     /**
@@ -154,7 +169,11 @@ public class YDAlarm {
             updateHAM(getRestTime());
             //只有在开启仅震动……功能，并设定了之前的晚睡响铃闹钟才会将isRing设为false
             if (firstSleepAlarm.isJustShockOn() && isNight &&
-                    isRing() && isBefore()) setRing(false);
+                    isRing() && isBefore(true)) setRing(false);
+            //若开启不到几点不起床功能，且晚睡目标时间在指定时间之前，则将目标时间推迟到设定的起床点
+            if (firstSleepAlarm.isDelayGetUp() && isNight && isBefore(false)) {
+                delayTargetTime();
+            }
             //目标闹钟
             setAlarm(getHour(), getMinutes());
             sp.edit().putBoolean("isTargetAlarmSet", true).apply();

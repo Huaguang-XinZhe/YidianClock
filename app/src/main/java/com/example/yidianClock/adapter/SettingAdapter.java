@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.yidianClock.MyUtils;
+import com.example.yidianClock.utils.MyUtils;
 import com.example.yidianClock.R;
 import com.example.yidianClock.databinding.ItemSettingBinding;
 import com.example.yidianClock.model.MyAlarm;
@@ -67,18 +67,24 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
         //数据初始化————————————————————————————————————————————
         boolean isNight;
         if (position == 1) {
-            // TODO: 2022/11/1 此处有待精简
             //晚睡item加载所需
             holder.restType.setText("晚睡");
             holder.timeUnit.setText("小时");
             holder.potTitle.setText("晚睡一般时段");
             holder.potIntro.setText("晚睡一般入睡点所在时段");
+            holder.restTimeEdit.setHint("默认 7.5");
+            holder.shockIntervalEdit.setHint("默认 45");
+
             holder.itemSB.noRingBeforeLayout.setVisibility(View.VISIBLE);
+            holder.itemSB.layoutDonGetUp.setVisibility(View.VISIBLE);
             holder.itemSB.lineView.setVisibility(View.VISIBLE);
+            holder.itemSB.lineView2.setVisibility(View.VISIBLE);
             isNight = true;
         } else {
             holder.itemSB.noRingBeforeLayout.setVisibility(View.GONE);
+            holder.itemSB.layoutDonGetUp.setVisibility(View.GONE);
             holder.itemSB.lineView.setVisibility(View.GONE);
+            holder.itemSB.lineView2.setVisibility(View.GONE);
             isNight = false;
         }
 
@@ -92,10 +98,17 @@ public class SettingAdapter extends RecyclerView.Adapter<SettingAdapter.InnerHol
         holder.isSetShockButton.setChecked(myAlarm.isShockTipSet());
         holder.isSetTaskButton.setChecked(myAlarm.isTaskSet());
         holder.itemSB.noRingBeforeButton.setChecked(myAlarm.isJustShockOn());
+        holder.itemSB.buttonDonGetUp.setChecked(myAlarm.isDelayGetUp());
+
         //几点前不响铃
         if (myAlarm.isJustShockOn()) {
-            holder.itemSB.titleBellowTV.setText(myAlarm.getBeforeTimeStr());
+            holder.itemSB.titleBellowTV.setText(myAlarm.getBeforeTimeStr_noRingBefore());
             holder.itemSB.titleBellowTV.setTextColor(context.getResources().getColor(R.color.green_set_value));
+        }
+        //不到几点不起床
+        if (myAlarm.isDelayGetUp()) {
+            holder.itemSB.tvIntroDonGetUp.setText(myAlarm.getBeforeTimeStr_donGetUp());
+            holder.itemSB.tvIntroDonGetUp.setTextColor(context.getResources().getColor(R.color.green_set_value));
         }
         //铃声图标
         RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) holder.bellImage.getLayoutParams();

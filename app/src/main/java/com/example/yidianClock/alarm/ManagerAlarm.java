@@ -1,4 +1,4 @@
-package com.example.yidianClock;
+package com.example.yidianClock.alarm;
 
 import static android.content.Context.ALARM_SERVICE;
 

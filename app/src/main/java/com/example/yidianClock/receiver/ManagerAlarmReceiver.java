@@ -11,8 +11,7 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
-import com.example.yidianClock.Flash;
-import com.example.yidianClock.activity.EmptyActivity;
+import com.example.yidianClock.utils.Flash;
 
 public class ManagerAlarmReceiver extends BroadcastReceiver {
 

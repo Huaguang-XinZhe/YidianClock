@@ -7,14 +7,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.yidianClock.MyUtils;
-import com.example.yidianClock.TimePoint;
-import com.example.yidianClock.YDAlarm;
-
-import java.sql.Time;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import com.example.yidianClock.utils.MyUtils;
+import com.example.yidianClock.utils.TimePoint;
+import com.example.yidianClock.alarm.YDAlarm;
 
 public class UnlockReceiver extends BroadcastReceiver {
 

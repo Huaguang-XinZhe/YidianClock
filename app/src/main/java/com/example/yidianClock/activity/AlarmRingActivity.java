@@ -15,8 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.yidianClock.MyHashMap;
-import com.example.yidianClock.MyUtils;
+import com.example.yidianClock.utils.MyHashMap;
 import com.example.yidianClock.adapter.RingAdapter;
 import com.example.yidianClock.databinding.ActivityAlarmRingBinding;
 import com.example.yidianClock.model.Song;

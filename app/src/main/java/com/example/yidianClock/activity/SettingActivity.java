@@ -3,7 +3,6 @@ package com.example.yidianClock.activity;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.Ringtone;
@@ -13,6 +12,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -24,11 +25,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.yidianClock.MobileInfoUtils;
-import com.example.yidianClock.MyHashMap;
+import com.example.yidianClock.utils.MobileInfoUtils;
+import com.example.yidianClock.utils.MyHashMap;
 import com.example.yidianClock.picker.MyPeriodPicker;
 import com.example.yidianClock.picker.MyPicker;
-import com.example.yidianClock.MyUtils;
+import com.example.yidianClock.utils.MyUtils;
 import com.example.yidianClock.R;
 import com.example.yidianClock.adapter.SettingAdapter;
 import com.example.yidianClock.databinding.ActivitySettingBinding;
@@ -139,9 +140,7 @@ public class SettingActivity extends AppCompatActivity {
                 if (sp.getBoolean("isAutoStartRequest", true)) {
                     new MaterialAlertDialogBuilder(this)
                             .setTitle("请求自启")
-                            .setMessage("该功能需要允许后台自启动才能正常运行。不过放心，我们只会在您设置的指定的震光间隔到达时才会使用，主要用于唤醒程序，执行震动和闪光提示。\n\n" +
-                                    "其他时候我们不会自启，当然，也没必要自启。这点可以从应用耗电验证（允许自启会增加些许耗电，如果耗电异常，那应用肯定滥用自启，常驻后台）。\n\n" +
-                                    "该提示只会出现一次，如果您拒绝了此请求，下次您要使用该功能之前就必须手动开启（可长按软件图标，跳转到应用详情，耗电管理开启）。\n")
+                            .setMessage(R.string.dialog_message_selfStart)
                             .setPositiveButton("我已明白", (dialog, which) -> {
                                 new MobileInfoUtils(this).jumpStartInterface();
                             })
@@ -188,50 +187,50 @@ public class SettingActivity extends AppCompatActivity {
             holder.itemSB.shockLightBugHelpIV.setOnClickListener(v -> {
                 new MaterialAlertDialogBuilder(this)
                         .setTitle("为什么不正常提示？")
-                        .setMessage("这是由于该应用的自启尚未开启或应用被杀死所致。\n\n" +
-                                "我们希望能一步到位，简化用户的操作，但奈何系统不允许，再加上厂商出于省电方面做出的种种限制，当下的应用想要在后台活动就变得愈加困难，定时提醒逻辑当然也不例外。\n\n" +
-                                "所以，我们需要您授予的自启动权限。\n\n" +
-                                "这会增加些许耗电，但相对微信这样的大户（一安装就默认允许自启，应该是厂商合作的神力）来说就显得微乎其微了。\n\n" +
-                                "我们承诺只在必要时唤醒程序，这一点可以从 App 耗电来验证。\n")
+                        .setMessage(R.string.dialog_message_help)
                         .setPositiveButton("我已明白", (dialog, which) -> {
                             new MobileInfoUtils(this).jumpStartInterface();
                         })
                         .show();
             });
 
-            //点击几点前不响铃布局块，开启或关闭
-            holder.itemSB.noRingBeforeLayout.setOnClickListener(v -> {
-                boolean isChecked = holder.itemSB.noRingBeforeButton.isChecked();
-                holder.itemSB.noRingBeforeButton.setChecked(!isChecked);
-            });
-            //几点前不响铃状态改变监听
-            holder.itemSB.noRingBeforeButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isChecked) {
-                    //开启状态
-                    //启动时间选择器
-                    MyPicker myPicker = new MyPicker(this);
-                    myPicker.setAndShow();
-                    //TimePicker点击确认
-                    myPicker.setOnConfirm(() -> {
-                        //使RadioButton开启
-                        holder.itemSB.noRingBeforeButton.setChecked(true);
-                        //替换titleBelow的值
-                        holder.itemSB.titleBellowTV.setText(myPicker.getTime());
-                        holder.itemSB.titleBellowTV.setTextColor(getResources().getColor(R.color.green_set_value));
-                        //更新到数据库
-                        values.put("beforeTimeStr", myPicker.getTime());
-                        updateData(holder, values);
-                    });
-                    //TimePicker点击取消
-                    myPicker.setOnCancel(() -> closeOrCancel(holder));
-                } else {
-                    closeOrCancel(holder);
-                }
-                Log.i("getSongsList", "几点前不响铃状态改变：" + isChecked);
-                //更新数据
-                updateChecked(holder, holder.itemSB.noRingBeforeButton, "isJustShockOn");
-            });
+//            //点击几点前不响铃布局块，开启或关闭
+//            holder.itemSB.noRingBeforeLayout.setOnClickListener(v -> {
+//                boolean isChecked = holder.itemSB.noRingBeforeButton.isChecked();
+//                holder.itemSB.noRingBeforeButton.setChecked(!isChecked);
+//            });
+//            //几点前不响铃状态改变监听
+//            holder.itemSB.noRingBeforeButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//                if (isChecked) {
+//                    //开启状态
+//                    //启动时间选择器
+//                    MyPicker myPicker = new MyPicker(this);
+//                    myPicker.setAndShow();
+//                    //TimePicker点击确认
+//                    myPicker.setOnConfirm(() -> {
+//                        //使RadioButton开启
+//                        holder.itemSB.noRingBeforeButton.setChecked(true);
+//                        //替换titleBelow的值
+//                        holder.itemSB.titleBellowTV.setText(myPicker.getTime());
+//                        holder.itemSB.titleBellowTV.setTextColor(getResources().getColor(R.color.green_set_value));
+//                        //更新到数据库
+//                        values.put("beforeTimeStr", myPicker.getTime());
+//                        updateData(holder, values);
+//                    });
+//                    //TimePicker点击取消
+//                    myPicker.setOnCancel(() -> closeOrCancel(holder));
+//                } else {
+//                    closeOrCancel(holder);
+//                }
+//                //更新数据
+//                updateChecked(holder, holder.itemSB.noRingBeforeButton, "isJustShockOn");
+//            });
 
+            //几点前不响铃item
+            timePickerItemAction(holder, true);
+
+            //不到几点不起床item
+            timePickerItemAction(holder, false);
 
             //restTime失去焦点后更新数据库
             updateText(holder, holder.itemSB.restTimeEdit, "restTime");
@@ -257,7 +256,7 @@ public class SettingActivity extends AppCompatActivity {
                 }
             });
 
-            //铃声图像点击监听
+            //铃声图标点击监听
             holder.bellImage.setOnClickListener(v -> {
                 //创建BottomSheetDialog，并将布局加载到其中
                 BottomSheetDialog dialog = new BottomSheetDialog(this, R.style.BottomSheetDialog);
@@ -375,8 +374,21 @@ public class SettingActivity extends AppCompatActivity {
                 //BottomSheetDialog点击灰黑处或点击返回键使dialog消失的事件监听
                 dialog.setOnDismissListener(dialog1 -> {
                     stopAndSaveValue(holder);
-                    //刷新焦点item的数据（主要是为了更新铃声图标）
-                    adapter.notifyItemChanged(position);
+//                    //刷新焦点item的数据（主要是为了更新铃声图标）
+//                    adapter.notifyItemChanged(position);
+                    //铃声图标
+                    RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) holder.bellImage.getLayoutParams();
+                    if (!currentRingTitle.equals("无")) {
+                        holder.bellImage.setImageResource(R.drawable.bell);
+                        layoutParams.width = 90;
+                        layoutParams.height = 90;
+                    } else {
+                        holder.bellImage.setImageResource(R.drawable.shock);
+                        //图标略显大了些，调小一点（注意，这里的类型必须是 “父类.LayoutParams”）
+                        layoutParams.width = 75;
+                        layoutParams.height = 75;
+                    }
+                    holder.bellImage.setLayoutParams(layoutParams);
                 });
 
             });
@@ -386,18 +398,77 @@ public class SettingActivity extends AppCompatActivity {
 
     }
 
+    private void timePickerItemAction(SettingAdapter.InnerHolder holder, boolean isNoRingBefore) {
+        ToggleButton toggleButton;
+        RelativeLayout relativeLayout;
+        TextView textView;
+        String beforeKey;
+        String switchKey;
+
+        //此处不能用switch，用了必须初始化，种种麻烦（不知道是不是我用的不对）
+        if (isNoRingBefore) {
+            toggleButton = holder.itemSB.noRingBeforeButton;
+            relativeLayout = holder.itemSB.noRingBeforeLayout;
+            textView = holder.itemSB.titleBellowTV;
+            beforeKey = "beforeTimeStr_noRingBefore";
+            switchKey = "isJustShockOn";
+        } else {
+            toggleButton = holder.itemSB.buttonDonGetUp;
+            relativeLayout = holder.itemSB.layoutDonGetUp;
+            textView = holder.itemSB.tvIntroDonGetUp;
+            beforeKey = "beforeTimeStr_donGetUp";
+            switchKey = "isDelayGetUp";
+        }
+
+        //点击item布局块，开启或关闭
+        relativeLayout.setOnClickListener(v -> {
+            boolean isChecked = toggleButton.isChecked();
+            toggleButton.setChecked(!isChecked);
+        });
+        //item状态改变监听
+        toggleButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                //开启状态
+                //启动时间选择器
+                MyPicker myPicker = new MyPicker(this);
+                myPicker.setAndShow(isNoRingBefore);
+                //TimePicker点击确认
+                myPicker.setOnConfirm(() -> {
+                    //使RadioButton开启
+                    toggleButton.setChecked(true);
+                    //替换titleBelow的值
+                    textView.setText(myPicker.getTime());
+                    textView.setTextColor(getResources().getColor(R.color.green_set_value));
+                    //更新到数据库
+                    values.put(beforeKey, myPicker.getTime());
+                    updateData(holder, values);
+                });
+                //TimePicker点击取消
+                myPicker.setOnCancel(() -> closeOrCancel(toggleButton, textView, isNoRingBefore));
+            } else {
+                closeOrCancel(toggleButton, textView, isNoRingBefore);
+            }
+            //更新数据
+            updateChecked(holder, toggleButton, switchKey);
+        });
+    }
+
 
     /**
-     * 几点前不响铃部分
+     * 几点前不响铃项和不到几点不响铃项的消极执行（关闭设置或取消时间选择）
      */
     @SuppressLint("SetTextI18n")
-    private void closeOrCancel(SettingAdapter.InnerHolder holder) {
+    private void closeOrCancel(ToggleButton button, TextView textView, boolean isNoRingBefore) {
         Log.i("getSongsList", "消极执行！");
-        holder.itemSB.noRingBeforeButton.setChecked(false);
-        holder.itemSB.titleBellowTV.setText("如您的入睡点不稳定，\n且不想在某个时点前的响铃吵醒身边的人，" +
-                "可以开启此项设置，时间到了会长震提醒。");
-        holder.itemSB.titleBellowTV.setTextColor(getResources().getColor(R.color.hintColor));
-        layoutManager.scrollToPositionWithOffset(1, -100);
+        button.setChecked(false);
+        if (isNoRingBefore) {
+            textView.setText(R.string.intro_noRingBefore);
+        } else {
+            textView.setText(R.string.intro_donGetUp);
+        }
+        textView.setTextColor(getResources().getColor(R.color.hintColor));
+        //offset调得大一点，保证屏幕一定会移动到最下边（这是item的顶端距离上边界的距离）
+        layoutManager.scrollToPositionWithOffset(1, -1000);
     }
 
     /**
@@ -408,9 +479,6 @@ public class SettingActivity extends AppCompatActivity {
     private boolean getCurrentRingData(boolean isNight) {
         MyAlarm myAlarm = new MyAlarm(isNight);
 //        Uri alarmDefaultUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
-        //这里虽然为ringtoneUriStr设定了空字符串的初始值，但取出来的时候依然是null
-        Log.i("getSongsList", "myAlarm.getRingtoneUriStr() = " + myAlarm.getRingtoneUriStr());
-        Log.i("getSongsList", "myAlarm.getRingtoneTitle() = " + myAlarm.getRingtoneTitle());
         currentRingUri = Uri.parse(myAlarm.getRingtoneUriStr());
         currentRingTitle = myAlarm.getRingtoneTitle();
         return myAlarm.isRing();
@@ -499,7 +567,6 @@ public class SettingActivity extends AppCompatActivity {
     private void updateChecked(SettingAdapter.InnerHolder holder,
                                ToggleButton button, String key) {
         boolean isChecked = button.isChecked();
-        Log.i("getSongsList", "isChecked = " + isChecked);
         //更新数据库中对应的数据
         values.put(key, isChecked);
         updateData(holder, values);

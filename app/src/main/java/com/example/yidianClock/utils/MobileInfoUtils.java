@@ -1,4 +1,4 @@
-package com.example.yidianClock;
+package com.example.yidianClock.utils;
 
 import android.content.ComponentName;
 import android.content.Context;

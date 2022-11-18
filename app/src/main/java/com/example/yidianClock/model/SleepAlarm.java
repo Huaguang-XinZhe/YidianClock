@@ -3,7 +3,7 @@ package com.example.yidianClock.model;
 import org.litepal.crud.LitePalSupport;
 
 public class SleepAlarm extends LitePalSupport {
-    private float restTime = 7;
+    private float restTime = 7.5f;
     private String content = "又是元气满满的一天";
     private boolean isSetShockTip = false;
     private boolean isSetTask = false;
@@ -12,9 +12,12 @@ public class SleepAlarm extends LitePalSupport {
     private String ringtoneTitle = "系统默认";
     private String timeStart = "21:30";
     private String timeEnd = "2:30";
-    private int shockInterval = 50;
+    private int shockInterval = 45;
+    //下面这些是晚睡设置独有的属性
     private boolean isJustShockOn = false;
-    private String beforeTimeStr = "7:00";
+    private String beforeTimeStr_noRingBefore = "7:00";
+    String beforeTimeStr_donGetUp = "6:00";
+    boolean isDelayGetUp = false;
 
     public String getRingtoneTitle() {
         return ringtoneTitle;
@@ -64,12 +67,28 @@ public class SleepAlarm extends LitePalSupport {
         isJustShockOn = justShockOn;
     }
 
-    public String getBeforeTimeStr() {
-        return beforeTimeStr;
+    public String getBeforeTimeStr_noRingBefore() {
+        return beforeTimeStr_noRingBefore;
     }
 
-    public void setBeforeTimeStr(String beforeTimeStr) {
-        this.beforeTimeStr = beforeTimeStr;
+    public void setBeforeTimeStr_noRingBefore(String beforeTimeStr_noRingBefore) {
+        this.beforeTimeStr_noRingBefore = beforeTimeStr_noRingBefore;
+    }
+
+    public String getBeforeTimeStr_donGetUp() {
+        return beforeTimeStr_donGetUp;
+    }
+
+    public void setBeforeTimeStr_donGetUp(String beforeTimeStr_donGetUp) {
+        this.beforeTimeStr_donGetUp = beforeTimeStr_donGetUp;
+    }
+
+    public boolean isDelayGetUp() {
+        return isDelayGetUp;
+    }
+
+    public void setDelayGetUp(boolean delayGetUp) {
+        isDelayGetUp = delayGetUp;
     }
 
     public int getSleepShockInterval() {

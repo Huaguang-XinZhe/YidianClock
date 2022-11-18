@@ -50,7 +50,7 @@ public class MyPicker {
     /**
      * 从底部弹出时段选择弹框（设置并弹出）
      */
-    public void setAndShow(){
+    public void setAndShow(boolean isNoRingBefore){
         bottomSheetDialog = new BottomSheetDialog(context);
         DialogTimePickerBinding timePickerBinding = DialogTimePickerBinding.inflate(LayoutInflater.from(context));
         bottomSheetDialog.setContentView(timePickerBinding.getRoot());
@@ -60,7 +60,12 @@ public class MyPicker {
 
         //在TimePicker启动的时候预设时间
         SleepAlarm sleepAlarm = LitePal.findFirst(SleepAlarm.class);
-        String[] beforeTimeStrArr = sleepAlarm.getBeforeTimeStr().split(":");
+        String[] beforeTimeStrArr;
+        if (isNoRingBefore) {
+            beforeTimeStrArr = sleepAlarm.getBeforeTimeStr_noRingBefore().split(":");
+        } else {
+            beforeTimeStrArr = sleepAlarm.getBeforeTimeStr_donGetUp().split(":");
+        }
         hour = Integer.parseInt(beforeTimeStrArr[0]);
         minutes = Integer.parseInt(beforeTimeStrArr[1]);
 

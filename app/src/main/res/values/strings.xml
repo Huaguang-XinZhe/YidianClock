@@ -10,7 +10,9 @@
     <string name="shockIntervalView">震光间隔（闹铃时长）</string>
     <string name="drawer_open">打开抽屉</string>
     <string name="drawer_close">关闭抽屉</string>
-    <string name="shockInterval_Default_30">默认 30</string>
+    <string name="dialog_message_help">这是由于该应用的自启尚未开启或应用被杀死所致。\n\n我们希望能一步到位，简化用户的操作，但奈何系统不允许，再加上厂商出于省电方面做出的种种限制，当下的应用想要在后台活动就变得愈加困难，定时提醒逻辑当然也不例外。\n\n所以，我们需要您授予的自启动权限。\n\n这会增加些许耗电，但相对微信这样的大户（一安装就默认允许自启，应该是厂商合作的神力）来说就显得微乎其微了。\n\n我们承诺只在必要时唤醒程序，这一点可以从 App 耗电来验证。\n</string>
+    <string name="dialog_message_selfStart">该功能需要允许后台自启动才能正常运行。不过放心，我们只会在您设置的指定的震光间隔到达时才会使用，主要用于唤醒程序，执行震动和闪光提示。\n\n其他时候我们不会自启，当然，也没必要自启。这点可以从应用耗电验证（允许自启会增加些许耗电，如果耗电异常，那应用肯定滥用自启，常驻后台）。\n\n该提示只会出现一次，如果您拒绝了此请求，下次您要使用该功能之前就必须手动开启（可长按软件图标，跳转到应用详情，耗电管理开启）。\n</string>
+    <string name="shockInterval_Default_30">默认 25</string>
     <string name="lunchPOT">午休一般时段</string>
     <string name="lunchPOT_Default">默认：10:30 ~ 16:30</string>
     <string name="lunchPOT_Introduce">午休一般入睡点所在时段</string>
@@ -32,6 +34,8 @@
     <string name="the_alarm_clock_task">强制闹钟任务</string>
     <string name="more_view"><![CDATA[更多 > >]]></string>
     <string name="_200">走 200 步</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="intro_noRingBefore">如您的入睡点不稳定，\n且不想在某个时点前的响铃吵醒身边的人，可以开启此项设置，时间到了会长震提醒。</string>
+    <string name="title_noRingBefore">几点前不响铃</string>
+    <string name="title_donGetUp">不到几点不起床</string>
+    <string name="intro_donGetUp">经过充分作息实践，\n如您发现自己可能偶然会过早入睡，但又不想在凌晨过早醒来，那么可以开启此项设置。\n届时闹铃将会推迟到您设置的最早起床点。</string>
 </resources>

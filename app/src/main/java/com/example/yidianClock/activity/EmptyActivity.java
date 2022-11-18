@@ -12,8 +12,8 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.WindowManager;
 
-import com.example.yidianClock.Flash;
-import com.example.yidianClock.MyUtils;
+import com.example.yidianClock.utils.Flash;
+import com.example.yidianClock.utils.MyUtils;
 import com.example.yidianClock.R;
 
 public class EmptyActivity extends AppCompatActivity {

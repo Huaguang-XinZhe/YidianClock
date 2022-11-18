@@ -12,8 +12,11 @@ public class MyAlarm {
     boolean isRing;
     String ringtoneUriStr;
     String ringtoneTitle;
-    String beforeTimeStr;
+    //晚睡独有属性，也得备着
+    String beforeTimeStr_noRingBefore;
     boolean isJustShockOn;
+    String beforeTimeStr_donGetUp;
+    boolean isDelayGetUp;
     //__________________________________
     private final boolean isNight;
     private LunchAlarm lunch = LitePal.findFirst(LunchAlarm.class);
@@ -45,8 +48,12 @@ public class MyAlarm {
         potStr = getTimeStart2() + " ~ " + getTimeEnd2();
         ringtoneUriStr = getRingtoneUri2();
         ringtoneTitle = getRingtoneTitle2();
-        beforeTimeStr = getBeforeTimeStr();
+        //晚睡setting特别需要
+        beforeTimeStr_noRingBefore = getBeforeTimeStr_noRingBefore();
         isJustShockOn = isJustShockOn();
+        beforeTimeStr_donGetUp = getBeforeTimeStr_donGetUp();
+        isDelayGetUp = isDelayGetUp();
+
     }
 
     public String getRingtoneTitle2() {
@@ -129,8 +136,29 @@ public class MyAlarm {
         }
     }
 
-    public String getBeforeTimeStr() {
-        return sleep.getBeforeTimeStr();
+
+    public String getBeforeTimeStr_noRingBefore() {
+        return sleep.getBeforeTimeStr_noRingBefore();
+    }
+
+    public void setBeforeTimeStr_noRingBefore(String beforeTimeStr_noRingBefore) {
+        this.beforeTimeStr_noRingBefore = beforeTimeStr_noRingBefore;
+    }
+
+    public String getBeforeTimeStr_donGetUp() {
+        return sleep.getBeforeTimeStr_donGetUp();
+    }
+
+    public void setBeforeTimeStr_donGetUp(String beforeTimeStr_donGetUp) {
+        this.beforeTimeStr_donGetUp = beforeTimeStr_donGetUp;
+    }
+
+    public boolean isDelayGetUp() {
+        return sleep.isDelayGetUp();
+    }
+
+    public void setDelayGetUp(boolean delayGetUp) {
+        isDelayGetUp = delayGetUp;
     }
 
     public boolean isJustShockOn() {
@@ -139,10 +167,6 @@ public class MyAlarm {
 
     public void setJustShockOn(boolean justShockOn) {
         isJustShockOn = justShockOn;
-    }
-
-    public void setBeforeTimeStr(String beforeTimeStr) {
-        this.beforeTimeStr = beforeTimeStr;
     }
 
     public String getRingtoneTitle() {

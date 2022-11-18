@@ -1,22 +1,14 @@
 package com.example.yidianClock.activity;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Vibrator;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,11 +19,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.yidianClock.Flash;
-import com.example.yidianClock.ManagerAlarm;
-import com.example.yidianClock.MyUtils;
 import com.example.yidianClock.R;
-import com.example.yidianClock.YDAlarm;
+import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.adapter.MyFSAdapter;
 import com.example.yidianClock.databinding.ActivityMainBinding;
 import com.example.yidianClock.fragment.HomeFragment;
