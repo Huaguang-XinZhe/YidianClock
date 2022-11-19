@@ -24,10 +24,12 @@ import java.util.Locale;
 public class MyUtils {
     @SuppressLint("StaticFieldLeak")
     private static MyUtils myUtils;
-    private final Context context;
+    Context context;
+    InputMethodManager manager;
 
     private MyUtils(Context context) {
         this.context = context;
+        manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
     }
 
     public static MyUtils getInstance(Context context) {
@@ -112,11 +114,22 @@ public class MyUtils {
      * @param v View对象
      */
     public void hideSoftInput(View v) {
-        InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+//        InputMethodManager manager = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
         if (manager != null) {
             manager.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
     }
+
+    /**
+     * 显示软键盘
+     */
+    public void showSoftInput(View v) {
+        if (manager != null) {
+            Log.i("getSongsList", "弹出软键盘执行");// TODO: 2022/11/19 没效果 
+            manager.showSoftInputFromInputMethod(v.getWindowToken(), InputMethodManager.SHOW_FORCED);
+        }
+    }
+
 
 //    /**
 //     * 取出小数后边多余的零，但有不影响非零小数

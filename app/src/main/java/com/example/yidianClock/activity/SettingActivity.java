@@ -194,38 +194,6 @@ public class SettingActivity extends AppCompatActivity {
                         .show();
             });
 
-//            //点击几点前不响铃布局块，开启或关闭
-//            holder.itemSB.noRingBeforeLayout.setOnClickListener(v -> {
-//                boolean isChecked = holder.itemSB.noRingBeforeButton.isChecked();
-//                holder.itemSB.noRingBeforeButton.setChecked(!isChecked);
-//            });
-//            //几点前不响铃状态改变监听
-//            holder.itemSB.noRingBeforeButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-//                if (isChecked) {
-//                    //开启状态
-//                    //启动时间选择器
-//                    MyPicker myPicker = new MyPicker(this);
-//                    myPicker.setAndShow();
-//                    //TimePicker点击确认
-//                    myPicker.setOnConfirm(() -> {
-//                        //使RadioButton开启
-//                        holder.itemSB.noRingBeforeButton.setChecked(true);
-//                        //替换titleBelow的值
-//                        holder.itemSB.titleBellowTV.setText(myPicker.getTime());
-//                        holder.itemSB.titleBellowTV.setTextColor(getResources().getColor(R.color.green_set_value));
-//                        //更新到数据库
-//                        values.put("beforeTimeStr", myPicker.getTime());
-//                        updateData(holder, values);
-//                    });
-//                    //TimePicker点击取消
-//                    myPicker.setOnCancel(() -> closeOrCancel(holder));
-//                } else {
-//                    closeOrCancel(holder);
-//                }
-//                //更新数据
-//                updateChecked(holder, holder.itemSB.noRingBeforeButton, "isJustShockOn");
-//            });
-
             //几点前不响铃item
             timePickerItemAction(holder, true);
 
@@ -268,7 +236,6 @@ public class SettingActivity extends AppCompatActivity {
                 if (!isRing) {
                     currentRingTitle = "无";
                 }
-                Log.i("getSongsList", "currentRingTitle = " + currentRingTitle);
                 dialogBinding.currentRingtoneTV.setText(currentRingTitle);
 
                 //解决BottomSheetDialog设置圆角后带来的底部导航栏透明问题

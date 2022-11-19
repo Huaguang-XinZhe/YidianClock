@@ -4,11 +4,23 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,14 +32,18 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.yidianClock.R;
+import com.example.yidianClock.TextBGSpan;
 import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.adapter.MyFSAdapter;
 import com.example.yidianClock.databinding.ActivityMainBinding;
+import com.example.yidianClock.databinding.DialogRemindInputBinding;
 import com.example.yidianClock.fragment.HomeFragment;
 import com.example.yidianClock.fragment.ReminderDayFragment;
 import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.SleepAlarm;
 import com.example.yidianClock.receiver.UnlockReceiver;
+import com.example.yidianClock.utils.MyUtils;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -41,6 +57,10 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
     SharedPreferences sp;
     ActionBarDrawerToggle drawerToggle;
+    //用的多，就立个变量
+    EditText remindInput;
+    //独立成函数的部分需要
+    DialogRemindInputBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,14 +127,46 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: 2022/11/16 fab监听有待区分position 
                 //fab短按监听
                 fab.setOnClickListener(v -> {
-                    alarm.setFinally();
+                    if (position == 0) {
+                        //主页点击
+                        alarm.setFinally();
+                    } else {
+                        //提醒日点击
+                        //创建BottomSheetDialog
+                        BottomSheetDialog dialog = new BottomSheetDialog(MainActivity.this);
+                        binding = DialogRemindInputBinding.inflate(getLayoutInflater());
+                        dialog.setContentView(binding.getRoot());
+                        //在此对EditText初次实例化
+                        remindInput = binding.editRemindInput;
+                        //为EditText设置Span
+                        setSpan();
+                        //获取焦点，弹出软键盘
+                        remindInput.requestFocus();
+                        //执行，但没用
+//                        MyUtils.getInstance(dialog.getContext()).showSoftInput(remindInput);
+                        dialog.show();
+                        //以下是输入弹窗部分UI的点击监听__________________________________________________
+                        //撤销图标点击监听
+                        binding.imageRevoke.setOnClickListener(v1 -> {
+                            setSpan();
+                            //使撤销按钮消失
+                            binding.imageRevoke.setVisibility(View.GONE);
+                        });
+                    }
                 });
                 //fab长按监听
                 fab.setOnLongClickListener(v -> {
-                    //始终开启
-                    alarm.setLimitAlarm();
-                    //将设置闲娱限止的状态存入sp中
-                    sp.edit().putBoolean("isLimitAlarmSet", true).apply();
+                    if (position == 0) {
+                        //主页点击
+                        //始终开启
+                        alarm.setLimitAlarm();
+                        //将设置闲娱限止的状态存入sp中
+                        sp.edit().putBoolean("isLimitAlarmSet", true).apply();
+                    } else {
+                        //提醒日点击
+
+
+                    }
                     return true;
                 });
                 
@@ -130,6 +182,47 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
 
+    }
+
+    /**
+     * 为EditText设置Span
+     */
+    private void setSpan() {
+        //必须要单出来，为了点击取消Span，恢复源文本作准备
+        String sourceText = "我不知道你这是要干什么！";
+        SpannableString spannableStr = new SpannableString(sourceText);
+        //注意，span的索引就看end，end就是第几个字符，至于start，就往前推它们的差额就行了
+        //使用Spannable.SPAN_EXCLUSIVE_EXCLUSIVE标志，在其后插入效果不会顺延，删除的时候一键就会全部删除。
+        //SPAN_INCLUSIVE_INCLUSIVE标志，前后都可以插入，但也是一键删除；
+        //SPAN_INTERMEDIATE标志、SPAN_COMPOSING标志、SPAN_MARK_MARK标志会在前边插入，后边不会，也是一键删除；
+        //SPAN_POINT_POINT标志，后边可插，前边不行，一键删除；
+        //单出来是为了移除方便，当然，这样写起来也简洁一点
+        TextBGSpan bgSpan = new TextBGSpan(getResources().getColor(R.color.green_set_value));
+        spannableStr.setSpan(bgSpan, 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//                        spannableStr.setSpan(new RelativeSizeSpan(1.5f),
+//                                0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        //为Span设置点击监听
+        spannableStr.setSpan(new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View widget) {
+                //EditText移除Span，使用源文本
+                remindInput.setText(sourceText);
+                showRevokeShort();
+            }
+        }, 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        //为EditText绑定span，并设置点击事件（必须）
+        remindInput.setText(spannableStr, TextView.BufferType.SPANNABLE);
+        remindInput.setMovementMethod(LinkMovementMethod.getInstance());//点击事件必须添加这一句
+    }
+
+    /**
+     * 显示撤销按钮，并在3秒后移除
+     */
+    private void showRevokeShort() {
+        binding.imageRevoke.setVisibility(View.VISIBLE);
+        new Handler().postDelayed(() -> {
+            binding.imageRevoke.setVisibility(View.GONE);
+        }, 3000);
     }
 
     @Override
