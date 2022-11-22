@@ -70,6 +70,8 @@
         <activity
             android:name=".activity.MainActivity"
             android:exported="true">
+            <!--  在这里，adjustPan比adjustResize好，它会把下面的MainActivity固定住，把BottomSheetDialog中的EditText往上推； -->
+            <!--  而adjustResize除了会推EditText外，还会把MainActivity往上推，这就不合适了。 -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

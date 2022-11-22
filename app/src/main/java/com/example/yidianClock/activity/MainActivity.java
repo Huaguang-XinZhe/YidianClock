@@ -1,15 +1,21 @@
 package com.example.yidianClock.activity;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.RelativeSizeSpan;
@@ -27,16 +33,19 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDialogFragment;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.yidianClock.KeyWord;
 import com.example.yidianClock.R;
 import com.example.yidianClock.TextBGSpan;
 import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.adapter.MyFSAdapter;
 import com.example.yidianClock.databinding.ActivityMainBinding;
 import com.example.yidianClock.databinding.DialogRemindInputBinding;
+import com.example.yidianClock.databinding.FragmentReminderdayBinding;
 import com.example.yidianClock.fragment.HomeFragment;
 import com.example.yidianClock.fragment.ReminderDayFragment;
 import com.example.yidianClock.model.LunchAlarm;
@@ -48,6 +57,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -59,8 +69,14 @@ public class MainActivity extends AppCompatActivity {
     ActionBarDrawerToggle drawerToggle;
     //用的多，就立个变量
     EditText remindInput;
-    //独立成函数的部分需要
-    DialogRemindInputBinding binding;
+    //引用ReminderDayFragment中的binding对象
+    public FragmentReminderdayBinding frBinding;
+    String sourceText;
+    TextWatcher textWatcher;
+    String timeStr;
+    //String对象在类中如果一开始不初始化，那么他的初始值将默认为null
+    //为防止空指针异常（因为之后要调用String对象的contains方法），必须赋值
+    String oldSourceText = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,8 +136,19 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageSelected(position);
                 Log.i("getSongsList", "你选中了 " + position);
                 if (position == 1) {
+                    if (frBinding.layoutInput.getVisibility() == View.VISIBLE) {
+                        //隐藏后来的底部输入框
+                        frBinding.layoutInput.setVisibility(View.GONE);
+                    }
                     fab.setImageResource(R.drawable.add);
                 } else {
+                    if (fab.getVisibility() == View.GONE) {
+                        //原来底部复现（延迟一下，让软键盘先下去）
+                        new Handler().postDelayed(() -> {
+                            fab.setVisibility(View.VISIBLE);
+                            mainBinding.tabLayoutNav.setVisibility(View.VISIBLE);
+                        }, 300);
+                    }
                     fab.setImageResource(R.drawable.alarm);
                 }
                 // TODO: 2022/11/16 fab监听有待区分position 
@@ -132,26 +159,80 @@ public class MainActivity extends AppCompatActivity {
                         alarm.setFinally();
                     } else {
                         //提醒日点击
-                        //创建BottomSheetDialog
-                        BottomSheetDialog dialog = new BottomSheetDialog(MainActivity.this);
-                        binding = DialogRemindInputBinding.inflate(getLayoutInflater());
-                        dialog.setContentView(binding.getRoot());
+                        String[] keyWordArr = {"你", "你知", "你知道", "你知道吗"};
+                        KeyWord keyWord = new KeyWord(Arrays.asList(keyWordArr));
                         //在此对EditText初次实例化
-                        remindInput = binding.editRemindInput;
-                        //为EditText设置Span
-                        setSpan();
-                        //获取焦点，弹出软键盘
+                        remindInput = frBinding.editRemindInput;
+                        //隐藏光标下面的水滴
+                        ColorDrawable colorDrawable = new ColorDrawable(Color.TRANSPARENT);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            remindInput.setTextSelectHandle(colorDrawable);
+                        }// TODO: 2022/11/22 对更低的版本如何处理？ 
+                        //隐藏底部原来的布局
+                        mainBinding.tabLayoutNav.setVisibility(View.GONE);
+                        fab.setVisibility(View.GONE);
+                        //显示输入框布局
+                        frBinding.layoutInput.setVisibility(View.VISIBLE);
+                        //使EditText获取焦点，并弹出软键盘
                         remindInput.requestFocus();
-                        //执行，但没用
-//                        MyUtils.getInstance(dialog.getContext()).showSoftInput(remindInput);
-                        dialog.show();
-                        //以下是输入弹窗部分UI的点击监听__________________________________________________
+                        MyUtils.getInstance(MainActivity.this).showSoftInput(remindInput);
+                        //获取焦点（底线变绿了，但是EditText中没用光标，软键盘也没有弹出）
+                        //注意，在这里获取焦点，焦点改变事件不会被触发（一定要先注册，在改变才行，故将其放入delay块中）
+//                        remindInput.requestFocus();
+                        //得等会儿，要不然弹不出来（等待的时间要把握好，要不然弹出不稳定，有时不会弹，等长了又会有顿挫感）
+//                        new Handler().postDelayed(() -> {
+//                            //执行，但EditText必须获取到焦点
+//                            remindInput.requestFocus();
+//                            MyUtils.getInstance(dialog.getContext()).showSoftInput(remindInput);
+//                        }, 150);
+//                        dialog.show();
+
                         //撤销图标点击监听
-                        binding.imageRevoke.setOnClickListener(v1 -> {
-                            setSpan();
+                        frBinding.imageRevoke.setOnClickListener(v1 -> {
                             //使撤销按钮消失
-                            binding.imageRevoke.setVisibility(View.GONE);
+                            frBinding.imageRevoke.setVisibility(View.GONE);
+                            Log.i("getSongsList", "timeStr（撤销）= " + timeStr);
+                            setSpan();
                         });
+
+                        //EditText焦点改变监听
+                        remindInput.setOnFocusChangeListener((v1, hasFocus) -> {
+                            Log.i("getSongsList", "焦点改变监听");
+                            if (hasFocus) {
+                                //设置了这个后，Span文本无法点击了，但却修复了水滴隐现异常，也有了光标
+//                                remindInput.setTextIsSelectable(true);
+                                //下面这个没用
+//                                remindInput.setCursorVisible(true);
+                                Log.i("getSongsList", "有焦点了！！！");
+                            }
+                        });
+
+                        //EditText文本改变监听
+                        textWatcher = new TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+                            @Override
+                            public void afterTextChanged(Editable s) {
+//                                Log.i("getSongsList", "editable前 = " + s);
+                                sourceText = s.toString();
+                                // TODO: 2022/11/20 缺一个方法，传入源字符串，得到一个表示时间的字符串
+                                timeStr = keyWord.getKeyWord(sourceText);
+                                Log.i("getSongsList", "timeStr = " + timeStr);
+                                if (!timeStr.isEmpty() && keyWord.getNewKeyWord(oldSourceText, sourceText) != null) {
+                                    setSpan();
+                                    //设置了Span后更新旧的源文本
+                                    oldSourceText = sourceText;
+                                    Log.i("getSongsList", "oldSourceText = " + oldSourceText);
+                                }
+                                Log.i("getSongsList", "输入改变");
+                            }
+                        };
+                        remindInput.addTextChangedListener(textWatcher);
+
                     }
                 });
                 //fab长按监听
@@ -188,8 +269,13 @@ public class MainActivity extends AppCompatActivity {
      * 为EditText设置Span
      */
     private void setSpan() {
-        //必须要单出来，为了点击取消Span，恢复源文本作准备
-        String sourceText = "我不知道你这是要干什么！";
+        //为适配Span，必须+1
+        int end = KeyWord.getEnd(sourceText, timeStr) + 1;
+        int start = end - timeStr.length();
+        Log.i("getSongsList", "start = " + start);
+        Log.i("getSongsList", "end = " + end);
+//        Editable editable = Editable.Factory.getInstance().newEditable(sourceText);
+//        Log.i("getSongsList", "editable后 = " + editable);
         SpannableString spannableStr = new SpannableString(sourceText);
         //注意，span的索引就看end，end就是第几个字符，至于start，就往前推它们的差额就行了
         //使用Spannable.SPAN_EXCLUSIVE_EXCLUSIVE标志，在其后插入效果不会顺延，删除的时候一键就会全部删除。
@@ -197,21 +283,33 @@ public class MainActivity extends AppCompatActivity {
         //SPAN_INTERMEDIATE标志、SPAN_COMPOSING标志、SPAN_MARK_MARK标志会在前边插入，后边不会，也是一键删除；
         //SPAN_POINT_POINT标志，后边可插，前边不行，一键删除；
         //单出来是为了移除方便，当然，这样写起来也简洁一点
+        //由于之前做过判断，一定存在时间关键词
         TextBGSpan bgSpan = new TextBGSpan(getResources().getColor(R.color.green_set_value));
-        spannableStr.setSpan(bgSpan, 0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannableStr.setSpan(bgSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 //                        spannableStr.setSpan(new RelativeSizeSpan(1.5f),
 //                                0, 4, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         //为Span设置点击监听
         spannableStr.setSpan(new ClickableSpan() {
             @Override
             public void onClick(@NonNull View widget) {
+                //先移除文本改变监听，要不然又会触发文本改变，重新来一遍，使点击效果失效
+                remindInput.removeTextChangedListener(textWatcher);
                 //EditText移除Span，使用源文本
                 remindInput.setText(sourceText);
+                //EditText移除完Span后再加上文本改变监听
+                remindInput.addTextChangedListener(textWatcher);
                 showRevokeShort();
             }
-        }, 0, 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        //先移除文本改变监听，要不然会反复触发，导致无限循环而崩溃
+        remindInput.removeTextChangedListener(textWatcher);
         //为EditText绑定span，并设置点击事件（必须）
         remindInput.setText(spannableStr, TextView.BufferType.SPANNABLE);
+        //将光标移动到文本最后边，不能影响输入
+        remindInput.setSelection(sourceText.length());
+        //EditText设置完Span后再加上文本改变监听
+        remindInput.addTextChangedListener(textWatcher);
         remindInput.setMovementMethod(LinkMovementMethod.getInstance());//点击事件必须添加这一句
     }
 
@@ -219,9 +317,9 @@ public class MainActivity extends AppCompatActivity {
      * 显示撤销按钮，并在3秒后移除
      */
     private void showRevokeShort() {
-        binding.imageRevoke.setVisibility(View.VISIBLE);
+        frBinding.imageRevoke.setVisibility(View.VISIBLE);
         new Handler().postDelayed(() -> {
-            binding.imageRevoke.setVisibility(View.GONE);
+            frBinding.imageRevoke.setVisibility(View.GONE);
         }, 3000);
     }
 
@@ -299,4 +397,5 @@ public class MainActivity extends AppCompatActivity {
             sp.edit().putBoolean("myDBInit_JustDoOnce", false).apply();
         }
     }
+
 }

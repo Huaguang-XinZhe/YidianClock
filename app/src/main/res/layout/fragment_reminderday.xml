@@ -13,4 +13,44 @@
         android:background="?android:attr/selectableItemBackground"
         android:layout_centerInParent="true"/>
 
+    <ImageView
+        android:id="@+id/image_revoke"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/revoke"
+        android:layout_marginStart="15dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:padding="10dp"
+        android:layout_above="@id/layout_input"
+        android:visibility="gone"/>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/layout_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/edit_remindInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="30dp"
+            android:inputType="text"
+            android:hint="你个傻逼，蠢蛋！"/>
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/bell"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:layout_marginEnd="30dp"/>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
 </RelativeLayout>

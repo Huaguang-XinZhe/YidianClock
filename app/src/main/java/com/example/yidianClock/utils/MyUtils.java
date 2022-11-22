@@ -125,8 +125,11 @@ public class MyUtils {
      */
     public void showSoftInput(View v) {
         if (manager != null) {
-            Log.i("getSongsList", "弹出软键盘执行");// TODO: 2022/11/19 没效果 
-            manager.showSoftInputFromInputMethod(v.getWindowToken(), InputMethodManager.SHOW_FORCED);
+            Log.i("getSongsList", "弹出软键盘执行");// TODO: 2022/11/19 没效果
+            //无效方法，不弹软键盘
+//            manager.showSoftInputFromInputMethod(v.getWindowToken(), InputMethodManager.SHOW_FORCED);
+            //这里第二个参数最好传0，不要传forced，下不来！（底部的布局会粘在软键盘上方）
+            manager.showSoftInput(v, 0);
         }
     }
 
