@@ -33,9 +33,9 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.yidianClock.utils.KeyWord;
+import com.example.yidianClock.matches.KeyWord;
 import com.example.yidianClock.R;
-import com.example.yidianClock.RegexMatches;
+import com.example.yidianClock.matches.RegexMatches;
 import com.example.yidianClock.TextBGSpan;
 import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.adapter.MyFSAdapter;
@@ -51,7 +51,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
