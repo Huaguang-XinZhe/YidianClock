@@ -1,4 +1,4 @@
-package com.example.yidianClock;
+package com.example.yidianClock.utils;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 这个类除了getEnd静态方法能用之外，其他的方法已经用不着了。
+ */
 public class KeyWord {
 //    //传入的源文本是时刻在变动的（传入的始终是最新值）
 //    String sourceStr;
@@ -104,6 +107,7 @@ public class KeyWord {
     /**
      * 源文本中是否含有关键词列表中的关键词，有就返回其中最长的那一个，没有就返回空字符串
      * @param sourceStr 源文本，时刻变动，适合放在参数位置传入
+     * @deprecated 已经用不着了
      */
     public String getKeyWord(String sourceStr) {
         //源文本包含关键词列表
@@ -125,7 +129,7 @@ public class KeyWord {
      * 获取源文本包含关键词列表中最长的那一个
      * @param containsKeyWordList 源文本包含关键词列表
      */
-    public String getLongestKeyWord(List<String> containsKeyWordList) {
+    private String getLongestKeyWord(List<String> containsKeyWordList) {
         //刚开始的时候默认第一个就是最长的
         String longest = containsKeyWordList.get(0);;
         for (int i = 0; i < containsKeyWordList.size(); i++) {
@@ -155,6 +159,7 @@ public class KeyWord {
     /**
      * 更新源文本后，获取新关键词
      * @return 有则返回，无返回null
+     * @deprecated 已经用不着了
      */
     public String getNewKeyWord(String oldSource, String newSource) {
         //如果不存在KeyWord则返回空字符串

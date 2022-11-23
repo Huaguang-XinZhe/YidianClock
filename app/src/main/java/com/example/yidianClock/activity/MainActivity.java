@@ -1,7 +1,6 @@
 package com.example.yidianClock.activity;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -13,12 +12,10 @@ import android.os.Handler;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,25 +23,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDialogFragment;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.yidianClock.KeyWord;
+import com.example.yidianClock.utils.KeyWord;
 import com.example.yidianClock.R;
+import com.example.yidianClock.RegexMatches;
 import com.example.yidianClock.TextBGSpan;
 import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.adapter.MyFSAdapter;
 import com.example.yidianClock.databinding.ActivityMainBinding;
-import com.example.yidianClock.databinding.DialogRemindInputBinding;
 import com.example.yidianClock.databinding.FragmentReminderdayBinding;
 import com.example.yidianClock.fragment.HomeFragment;
 import com.example.yidianClock.fragment.ReminderDayFragment;
@@ -52,7 +47,6 @@ import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.SleepAlarm;
 import com.example.yidianClock.receiver.UnlockReceiver;
 import com.example.yidianClock.utils.MyUtils;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -159,15 +153,13 @@ public class MainActivity extends AppCompatActivity {
                         alarm.setFinally();
                     } else {
                         //提醒日点击
-                        String[] keyWordArr = {"你", "你知", "你知道", "你知道吗"};
-                        KeyWord keyWord = new KeyWord(Arrays.asList(keyWordArr));
                         //在此对EditText初次实例化
                         remindInput = frBinding.editRemindInput;
                         //隐藏光标下面的水滴
                         ColorDrawable colorDrawable = new ColorDrawable(Color.TRANSPARENT);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             remindInput.setTextSelectHandle(colorDrawable);
-                        }// TODO: 2022/11/22 对更低的版本如何处理？ 
+                        }// TODO: 2022/11/22 对更低的版本如何处理？
                         //隐藏底部原来的布局
                         mainBinding.tabLayoutNav.setVisibility(View.GONE);
                         fab.setVisibility(View.GONE);
@@ -220,9 +212,9 @@ public class MainActivity extends AppCompatActivity {
 //                                Log.i("getSongsList", "editable前 = " + s);
                                 sourceText = s.toString();
                                 // TODO: 2022/11/20 缺一个方法，传入源字符串，得到一个表示时间的字符串
-                                timeStr = keyWord.getKeyWord(sourceText);
+                                timeStr = RegexMatches.getFirstMatchedStr(RegexMatches.TIME_REGEX, sourceText);
                                 Log.i("getSongsList", "timeStr = " + timeStr);
-                                if (!timeStr.isEmpty() && keyWord.getNewKeyWord(oldSourceText, sourceText) != null) {
+                                if (!timeStr.isEmpty() && RegexMatches.getNewMatchedStr(oldSourceText, sourceText) != null) {
                                     setSpan();
                                     //设置了Span后更新旧的源文本
                                     oldSourceText = sourceText;
