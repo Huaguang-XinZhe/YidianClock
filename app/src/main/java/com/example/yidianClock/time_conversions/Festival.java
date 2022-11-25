@@ -1,14 +1,11 @@
 package com.example.yidianClock.time_conversions;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,9 +13,6 @@ import java.util.regex.Pattern;
  * 节日和节气相关
  */
 public class Festival {
-    //春节|除夕|过年|中元节|七月半|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|
-    // (元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?
-    static Map<String, String> festivalMap = new HashMap<>();
     /**
      * 节气D值
      */
@@ -54,16 +48,19 @@ public class Festival {
      */
     private static final String OFFSET_REGEX = "\\d{4}[+-]";
 
+    //春节|除夕|过年|中元节|七月半|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|
+    // (元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?
+    static final String[] FESTIVAL_ARR = new String[] {
+            //农历部分
+            "除夕1230+", "过年1230+", "中元节0715+", "七月半0715+", "鬼节0715+", "元宵0115+", "元宵节0115+",
+            "端午0505+", "端午节0505+", "中秋0815+", "中秋节0815+", "重阳0909+", "重阳节0909+", "七夕0707+", "七夕节0707+", "春节0101+",
+            //公历部分
+            "元旦0101", "元旦节0101", "情人节0214", "五一0501", "劳动节0501", "六一0601",
+            "儿童节0601", "高考0607", "国庆1001", "国庆节1001", "圣诞1225", "圣诞节1225",
+            //第几月的第几个星期几
+            "母亲节050207", "父亲节060307"
+    };
 
-    static {
-        //这里加的都是公历日期
-        festivalMap.put("元旦", "0101");
-        festivalMap.put("元旦节", "0101");
-        festivalMap.put("情人节", "02/14");
-//        festivalMap.put("清明节", )
-    }
-
-    // TODO: 2022/11/25 几月的第几个星期几
 
     /**
      * 将二十四节气转化为公历的具体日期（1900~2100）
@@ -137,12 +134,55 @@ public class Festival {
         //获取公历中的月
         int month = TERM_MONTH[termIndex];
         return yearStr + "-" + addZero(month) + "-" + addZero(day);
+    }
 
+    /**
+     * 计算某年某月第几个星期几的日期
+     * @param num 第几个
+     * @param wek 星期几
+     */
+    public static String get5month5week5(int year, int month, int num, int wek) {
+        String date = "";
+        int count = 0;
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        //Calendar对象的月份常量都往前推了1（1月为0），为了适配，我们传入的月就要前推一个单位
+        calendar.set(Calendar.MONTH, month - 1);
+        //本月份的天数
+        int dayNum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        //遍历当月的每一天，找到第几个星期几对应的日
+        for (int i = 1; i <= dayNum; i++) {
+            calendar.set(Calendar.DAY_OF_MONTH, i);
+            int weekWhat = getRealWeek5(calendar);
+            if (weekWhat == wek) count++;
+            if (count == num) {
+                //相等就是找到了，日记录下来就跳出循环
+                date = year + "-" + addZero(month) + "-" + addZero(i);
+                break;
+            }
+        }
+        return date;
+    }
+
+    /**
+     * 因为Calendar对象的星期常量都往后推了1（星期天是1），故获取真正的周几
+     */
+    private static int getRealWeek5(Calendar calendar) {
+        int weekWhat;
+        int weekConstants = calendar.get(Calendar.DAY_OF_WEEK);
+        if (weekConstants - 1 == 0) {
+            //星期天
+            weekWhat = 7;
+        } else {
+            weekWhat = weekConstants - 1;
+        }
+        return weekWhat;
     }
 
     public static void main(String[] args) {
         String dateStr = solarTerms2dateStr("2002", "立秋");
-        System.out.println(dateStr);
+        String motherDay = get5month5week5(2021, 5, 2, 7);
+        System.out.println(motherDay);
     }
 
     /**
