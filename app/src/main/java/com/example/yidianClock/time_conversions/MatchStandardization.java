@@ -1,4 +1,4 @@
-package com.example.yidianClock.matches;
+package com.example.yidianClock.time_conversions;
 
 import android.util.Log;
 
@@ -12,18 +12,23 @@ import java.util.regex.Pattern;
 
 
 public class MatchStandardization {
-    static final String YMD_REGEX = "((\\d{2,4}|[零一二三四五六七八九]{2,4})年)?" +
-            "(\\d{1,2}|十[一二]|[一二三四五六七八九十])月(\\d{1,2}|[一二三四五六七八九十]{1,3})[日号]";
-    static final String FESTIVAL_SOLAR_TERM_REGEX = "((\\d{2,4}|[零一二三四五六七八九]{2,4})年)?" +
+    static final String YMD_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?" +
+            "((\\d{1,2}|十[一二]|[一二三四五六七八九十])月|大年)(\\d{1,2}|[一二三四五六七八九十]{1,3})[日号]";
+    //匹配节日或节气正则表达式（包括年部分）
+    static final String YEAR_IN_FESTIVAL_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?" +
             "(立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒|" +
-            "春节|除夕|中元节|七月半|母亲节|父亲节|五一|劳动节|六一|儿童节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?)";
-    static final String YEAR_FORWARD_REGEX = "(\\d{2,4}|[零一二三四五六七八九]{2,4})(?=年)";
+            "春节|除夕|过年|中元节|七月半|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?))";
+    static final String FESTIVAL_REGEX = "(立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒|" +
+            "春节|除夕|过年|中元节|七月半|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?))";
+    static final String YEAR_FORWARD_REGEX = "(\\d{2,4}|[〇零一二三四五六七八九]{2,4})(?=年)";
     static final String MONTH_FORWARD_REGEX = "(\\d{1,2}|十[一二]|[一二三四五六七八九十])(?=月)";
     static final String DAY_FORWARD_REGEX = "(\\d{1,2}|[一二三四五六七八九十]{1,3})(?=[日号])";
     static final Map<Character, Integer> cn_numMap = new HashMap<>();
     static final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
     static {
+        cn_numMap.put('〇', 0);
+        cn_numMap.put('零', 0);
         cn_numMap.put('一', 1);
         cn_numMap.put('二', 2);
         cn_numMap.put('三', 3);
@@ -48,7 +53,6 @@ public class MatchStandardization {
     //八三年十一月二十三日
     //八三年十二月十三日
     //01年11月九号
-
     /**
      * 转换含年月日类型的时间字符串为标准时间字符串
      * @param matchedStr 匹配到的时间字符串，默认不为空
@@ -60,32 +64,17 @@ public class MatchStandardization {
         String day;
         String deepMatchedStr = getDeepMatchedStr(YMD_REGEX, matchedStr);
         //有可能为空串，空串就是未来的时间，倒计时
-        String yearMatched = getDeepMatchedStr(YEAR_FORWARD_REGEX, deepMatchedStr);
+//        String yearMatched = getDeepMatchedStr(YEAR_FORWARD_REGEX, deepMatchedStr);
         String monthMatched = getDeepMatchedStr(MONTH_FORWARD_REGEX, deepMatchedStr);
         String dayMatched = getDeepMatchedStr(DAY_FORWARD_REGEX, deepMatchedStr);
 
         //处理年份，分两种情况：中文和数字。这两种情况下面又分两种情况：四位和两位___________________
         //中文转换为数字，不全面的转换为全面
-        if (!yearMatched.isEmpty()) {
-            year = conversionsYear(yearMatched);
-        } else {
-            year = currentYear + "";
-        }
+        year = conversionsYear(deepMatchedStr);
         //处理月__________________________________________________________________________
-        if (monthMatched.matches("\\d")) {
-            //数字
-            month = monthMatched;
-        } else {
-            //中文
-            month = cn2arabic(monthMatched);
-        }
+        month = conversionsMonthOrDay(monthMatched);
         //处理日（号），这个和月的处理类似______________________________________________________
-        if (dayMatched.matches("\\d")) {
-            //数字
-            day = dayMatched;
-        } else {
-            day = cn2arabic(dayMatched);
-        }
+        day = conversionsMonthOrDay(dayMatched);
 
         //组合返回
         String date = year + "-" + month + "-" + day;
@@ -93,26 +82,79 @@ public class MatchStandardization {
         return date;
     }
 
+    //高考
+    //母亲节
+    //冬至
+    //83年元旦
+    //九四年重阳节
+    //01年春分
+    /**
+     * 将含节日、节气的时间字符串转换为标准日期
+     * @param matchedStr 匹配到的时间字符串
+     * @return 标准日期，如：2001-11-09
+     */
+    public static String conversionsYearInFestival(String matchedStr) {
+        String year;
+        String deepMatchedStr = getDeepMatchedStr(YEAR_IN_FESTIVAL_REGEX, matchedStr);
+        year = conversionsYear(deepMatchedStr);
+        String festival = getDeepMatchedStr(FESTIVAL_REGEX, deepMatchedStr);
+        // TODO: 2022/11/25 未完待续
+        return "";
+    }
+
+    /**
+     * 转换不含年的节日、节气时间字符串（含高考）
+     * @param festival 节日、节气时间字符串（含高考）
+     * @return 标准月日，如：11-09
+     */
+    private static String conversionsFestival(String festival) {
+        // TODO: 2022/11/25 未完待续
+        return "";
+    }
+
     /**
      * 单独转换年份，这个在其他类型的全日期转换中用得着
-     * @param yearMatched 匹配到的年份，默认不为空串
+     * @param deepMatchedStr 含年的时间字符串
      * @return 返回标准的四位数字年份，不为空串
      */
-    private static String conversionsYear(String yearMatched) {
+    private static String conversionsYear(String deepMatchedStr) {
         String year;
-        if (yearMatched.matches("\\d")) {
-            //全是数字
-            year = yearMatched;
-        } else {
-            //中文数字
-            String yearNum = cn2num(yearMatched);
-            if (yearNum.length() == 2) {
-                year = yearTwo2Four(yearNum);
+        String yearMatched = getDeepMatchedStr(YEAR_FORWARD_REGEX, deepMatchedStr);
+        if (!yearMatched.isEmpty()) {
+            if (yearMatched.matches("\\d")) {
+                //全是数字
+                year = yearMatched;
             } else {
-                year = yearNum;
+                //中文数字
+                String yearNum = cn2num(yearMatched);
+                if (yearNum.length() == 2) {
+                    year = yearTwo2Four(yearNum);
+                } else {
+                    year = yearNum;
+                }
             }
+        } else {
+            //获取不到年份就是今年
+            year = currentYear + "";
         }
         return year;
+    }
+
+    /**
+     * 转换月、日为两位数字形式
+     * @param monthOrDayMatched 匹配到的月、日字符串
+     * @return 两位数字字符串，如：11、09、28
+     */
+    private static String conversionsMonthOrDay(String monthOrDayMatched) {
+        String monthOrDay;
+        if (monthOrDayMatched.matches("\\d")) {
+            //数字
+            monthOrDay = monthOrDayMatched;
+        } else {
+            //中文
+            monthOrDay = cn2arabic(monthOrDayMatched);
+        }
+        return monthOrDay;
     }
 
     /**
