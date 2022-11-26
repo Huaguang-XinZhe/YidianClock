@@ -310,17 +310,17 @@ public class Lunar {
         return ((LUNAR_INFO[year - MIN_YEAR] & 0xF00000)) >> 20;
     }
 
-    public static void main(String[] args) {
-//        //计算录入年份是否有闰月
-//        System.out.println(leapMonth(2020));
-//        //传回农历 year年month月的总天数，总共有13个月包括闰月
-//        System.out.println(daysInLunarMonth(2017,6));
-//        //传回农历year年month月的总天数
-//        System.out.println(daysInMonth(2017,6,false));
-//        //阳历转阴历  9.25  10.23 有问题
-//        System.out.println(Arrays.toString(solarToLunar(2022, 3, 2)));
-        //阴历转阳历
-        System.out.println(Arrays.toString(lunarToSolar(2020,4,7,true)));
-        System.out.println(lunar2solar("2020-4-7"));
-    }
+//    public static void main(String[] args) {
+////        //计算录入年份是否有闰月
+////        System.out.println(leapMonth(2020));
+////        //传回农历 year年month月的总天数，总共有13个月包括闰月
+////        System.out.println(daysInLunarMonth(2017,6));
+////        //传回农历year年month月的总天数
+////        System.out.println(daysInMonth(2017,6,false));
+////        //阳历转阴历  9.25  10.23 有问题
+////        System.out.println(Arrays.toString(solarToLunar(2022, 3, 2)));
+//        //阴历转阳历
+//        System.out.println(Arrays.toString(lunarToSolar(2020,4,7,true)));
+//        System.out.println(lunar2solar("2020-4-7"));
+//    }
 }

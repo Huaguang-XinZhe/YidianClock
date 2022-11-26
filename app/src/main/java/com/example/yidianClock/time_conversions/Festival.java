@@ -87,15 +87,16 @@ public class Festival {
         String _dateStr = MatchStandardization.getDeepMatchedStr(_DATE_REGEX, _festivalStr);
         String oldStr = _dateStr.substring(1, 2);
         //02-14或12-30+或05-0207
-        String month_day_ = _dateStr.replace(oldStr, oldStr + "-");
+        //该方法有风险，替换可能有多个！！！一定要使用replaceFirst，而不是replace
+        String month_day_ = _dateStr.replaceFirst(oldStr, oldStr + "-");
         switch (_dateStr.length()) {
             case 4:
                 //传入的是公历节日，匹配结果如：0214
-                date = yearStr + month_day_;
+                date = yearStr + "-" + month_day_;
                 break;
             case 5:
                 //传入的是农历节日，匹配结果如：1230+
-                String lunarDate = yearStr + month_day_.replace("+", "");
+                String lunarDate = yearStr + "-" + month_day_.replace("+", "");
                 date = Lunar.lunar2solar(lunarDate);
                 break;
             case 6:

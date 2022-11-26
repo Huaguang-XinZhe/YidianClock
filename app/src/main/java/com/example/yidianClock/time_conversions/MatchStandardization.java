@@ -1,7 +1,5 @@
 package com.example.yidianClock.time_conversions;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -22,24 +20,29 @@ public class MatchStandardization {
      */
     static final String YEAR_IN_FESTIVAL_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?" +
             "(立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒|" +
-            "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?))";
+            "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?)";
     /**
      * 匹配农历日期的正则
      */
     static final String LUNAR_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?(闰?[一二三四五六七八九十正冬仲子腊]月|大年)[初十廿三][一二三四五六七八九十]$";
     /**
+     * 匹配格式化的日期、混合型日期，如：01/11/9，九八年10-7
+     * 注意，这里的年份有可能不存在
+     */
+    static final String FM_DATE_REGEX = "((\\d{2,4}|[零一二三四五六七八九]{2,4})[年./-])?\\d{1,2}[\\./-]\\d{1,2}";
+    /**
      * 单独匹配节日
      */
     static final String FESTIVAL_REGEX = "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节" +
-            "|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?))";
+            "|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?";
     /**
      * 单独匹配节气
      */
     static final String TERM_REGEX = "立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒";
     /**
-     * 匹配年前边的部分
+     * 匹配年前边的部分（整合了格式化日期和混合日期型）
      */
-    static final String YEAR_FORWARD_REGEX = "(\\d{2,4}|[〇零一二三四五六七八九]{2,4})(?=年)";
+    static final String YEAR_FORWARD_REGEX = "^(\\d{2,4}|[〇零一二三四五六七八九]{2,4})(?=[年\\./-])";
     /**
      * 匹配公历月前边的部分
      */
@@ -75,6 +78,25 @@ public class MatchStandardization {
      * 农历日专用词和数字字符串的映射
      */
     static final Map<Character, String> lunarDayMap = new HashMap<>();
+    /**
+     * 匹配格式化的几月几号，如：11/1，11.1
+     */
+    static final String FORMAT_MD_REGEX = "\\d{1,2}[\\./-]\\d{1,2}$";
+    /**
+     * 匹配格式化日期、混合型日期的月
+     */
+    static final String FM_MONTH_REGEX = "\\d{1,2}(?=[\\\\./-])";
+    /**
+     * 匹配格式化日期、混合型日期的日
+     */
+    static final String FM_DAY_REGEX = "\\d{1,2}$";
+
+    /**
+     * 完整地匹配时间字符串的正则表达式数组
+     */
+    static final String[] COMPLETE_REGEX_ARR = new String[] {
+            YMD_REGEX, FM_DATE_REGEX, YEAR_IN_FESTIVAL_REGEX, LUNAR_REGEX
+    };
 
     static {
         cn_numMap.put('〇', 0);
@@ -96,6 +118,85 @@ public class MatchStandardization {
         lunarDayMap.put('三', "3");
     }
 
+    /**
+     * 对外接口，将一切形式的时间字符串转换为标准时间字符串，如：2001-11-09
+     * @param matchedStr 目前只支持四种类型（互不重叠），几月几日（号）型、格式化或混合型、节日或节气型、农历型
+     */
+    public static String conversions(String matchedStr) {
+        String date;
+        String deepMatchedStr = "";
+        int count = 0;
+        int index = 0;
+        for (String completeRegex : COMPLETE_REGEX_ARR) {
+            //执行一次循环，记录一次
+            count++;
+            String _deepMatchedStr = getDeepMatchedStr(completeRegex, matchedStr);
+            if (!_deepMatchedStr.isEmpty()) {
+                //只可能有一个正则匹配出来不是空串，记录下来，退出循环
+                deepMatchedStr = _deepMatchedStr;
+                index = count - 1;
+                break;
+            }
+        }
+        String year = conversionsYear(deepMatchedStr);
+        switch (index) {
+            case 0:
+                //年月日（号）类型
+                date = conversionsYMD(year, deepMatchedStr);
+                break;
+            case 1:
+                date = conversionsFMDate(year, deepMatchedStr);
+                break;
+            case 2:
+                date = conversions_festival(year, deepMatchedStr);
+                break;
+            case 3:
+                date = conversionsLunar(year, deepMatchedStr);
+                break;
+            default:
+                date = "无法解析";
+        }
+        return date;
+
+    }
+
+//    public static void main(String[] args) {
+//        String[] sourceArr = new String[] {
+//                "2011.11.9", "一九七七年四月九日", "1977年4月9日", "2001-11-9", "77年4月9号", "01年11月9号",
+//                "81-3-4", "01/4/19", "83年八月初二"
+////                "八三年八月初二", "83年元旦", "九四年重阳节", "01年春分",
+////                "八三年十二月二十三日", "九四年正月初九"
+////                "70年正月初十", "79年冬月三十", "八零年腊月廿九", "82年闰四月初七", "九八年10-7", "立冬", "小雪"
+//        };
+//        for (String source : sourceArr) {
+//            System.out.println(conversions(source));
+//        }
+//    }
+
+    //2011.11.9
+    //2001-11-9
+    //81-3-4
+    //01/4/19
+    //九八年10/7
+    /**
+     * 将格式化的日期、混合型日期转换为标准日期格式，如：2001-11-09，九八年10/7
+     * @param deepMatchedStr 对原始时间字符串进行深入匹配得到到该种类型的时间字符串，如上示例
+     */
+    private static String conversionsFMDate(String year, String deepMatchedStr) {
+        String formatMD = getDeepMatchedStr(FORMAT_MD_REGEX, deepMatchedStr);
+        //获取间隔符
+//        String intervalSymbol = getDeepMatchedStr("[\\./-]", formatMD);
+        //只可能有两个元素，一个月，一个日
+//        String[] dateArr = formatMD.split(intervalSymbol);
+        //注意，split中传入的是正则表达式，光一个点是不行的，必须进行转义
+//        String[] dateArr = "11.9".split("\\.");
+        String matchedMonth = getDeepMatchedStr(FM_MONTH_REGEX, formatMD);
+        String matchedDay = getDeepMatchedStr(FM_DAY_REGEX, formatMD);
+        String month = Festival.addZero(Integer.parseInt(matchedMonth));
+        String day = Festival.addZero(Integer.parseInt(matchedDay));
+        return year + "-" + month + "-" + day;
+    }
+
     //含年月日（号）的类型，如：
     //2014年4月1日
     //2013年4月15日
@@ -110,31 +211,26 @@ public class MatchStandardization {
     //01年11月九号
     /**
      * 转换含年月日类型的时间字符串为标准时间字符串
-     * @param matchedStr 匹配到的时间字符串，默认不为空
+     * @param deepMatchedStr 对原始时间字符串进行深入匹配得到到该种类型的时间字符串，如上示例
      * @return 2001-11-09型字符串
      */
-    public static String conversionsYMD(String matchedStr) {
-        String year;
+    private static String conversionsYMD(String year, String deepMatchedStr) {
         String month;
         String day;
-        String deepMatchedStr = getDeepMatchedStr(YMD_REGEX, matchedStr);
-        //有可能为空串，空串就是未来的时间，倒计时
-//        String yearMatched = getDeepMatchedStr(YEAR_FORWARD_REGEX, deepMatchedStr);
         String monthMatched = getDeepMatchedStr(SOLAR_MONTH_FORWARD_REGEX, deepMatchedStr);
         String dayMatched = getDeepMatchedStr(DAY_FORWARD_REGEX, deepMatchedStr);
 
         //处理年份，分两种情况：中文和数字。这两种情况下面又分两种情况：四位和两位___________________
         //中文转换为数字，不全面的转换为全面
-        year = conversionsYear(deepMatchedStr);
+//        year = conversionsYear(deepMatchedStr);
         //处理月__________________________________________________________________________
         month = conversionsMonthOrDay(monthMatched);
         //处理日（号），这个和月的处理类似______________________________________________________
         day = conversionsMonthOrDay(dayMatched);
 
         //组合返回
-        String date = year + "-" + month + "-" + day;
-        Log.i("getSongsList", "date = " + date);
-        return date;
+        //Log.i("getSongsList", "date = " + date);
+        return year + "-" + month + "-" + day;
     }
 
     //高考
@@ -145,15 +241,13 @@ public class MatchStandardization {
     //01年春分
     /**
      * 将含节日、节气的时间字符串转换为标准日期
-     * @param matchedStr 匹配到的时间字符串（可能含年也可能不含）
+     * @param deepMatchedStr 对原始时间字符串进行深入匹配得到到该种类型的时间字符串，如上示例
      * @return 标准日期，如：2001-11-09
      */
-    public static String conversions_festival(String matchedStr) {
+    private static String conversions_festival(String year, String deepMatchedStr) {
         String date;
-        //一定不为空串，结果如上示例
-        String deepMatchedStr = getDeepMatchedStr(YEAR_IN_FESTIVAL_REGEX, matchedStr);
         //不为空串
-        String year = conversionsYear(deepMatchedStr);
+//        String year = conversionsYear(deepMatchedStr);
         //先匹配节日，如果匹配的节日为空，那就再匹配节气
         String festival = getDeepMatchedStr(FESTIVAL_REGEX, deepMatchedStr);
         if (!festival.isEmpty()) {
@@ -176,24 +270,34 @@ public class MatchStandardization {
     //82年闰四月初七
     //正月十五
     //五月廿二
-    public static String conversionsLunar(String matchedStr) {
-        //一定不为空串，结果如上示例
-        String deepMatchedStr = getDeepMatchedStr(LUNAR_REGEX, matchedStr);
+
+    /**
+     * 转换农历时间字符串为标准日期格式，如：2001-11-09
+     * deepMatchedStr 对原始时间字符串进行深入匹配得到到该种类型的时间字符串，如上示例
+     */
+    private static String conversionsLunar(String year, String deepMatchedStr) {
         //不为空串
-        String year = conversionsYear(deepMatchedStr);
+//        String year = conversionsYear(deepMatchedStr);
+        String dayStr;
         //处理农历月____________________________________________________________________________
         String lunarMonthStr = getDeepMatchedStr(LUNAR_MONTH_FORWARD_REGEX, deepMatchedStr);
         //匹配到的农历月字符串在映射数组中的索引
         int index = getLunarMonthList().indexOf(lunarMonthStr);
-        //根据索引得到其对应的公历月份
-        String solarMonthStr = getDeepMatchedStr("\\d{2}", _LUNAR_MONTH_ARR[index]);
+        //根据索引得到其对应的数字月
+        String monthNumStr = getDeepMatchedStr("\\d{2}", _LUNAR_MONTH_ARR[index]);
         //处理农历日___________________________________________________________________________
         String lunarDayStr = getDeepMatchedStr(LUNAR_DAY_REGEX, deepMatchedStr);
         char lunarDayFirst = lunarDayStr.charAt(0);
         char lunarDayLast = lunarDayStr.charAt(1);
-        String dayStr = lunarDayMap.get(lunarDayFirst) + cn_numMap.get(lunarDayLast);
-        //合并，返回___________________________________________________________________________
-        return year + solarMonthStr + dayStr;
+        if (lunarDayStr.equals("初十")) {
+            //初十特例，按一般计算是00，必须判断
+            dayStr = "10";
+        } else {
+            dayStr = lunarDayMap.get(lunarDayFirst) + cn_numMap.get(lunarDayLast);
+        }
+        //转为公历，返回_____________________________________________________________________
+        String lunarDate = year + "-" + monthNumStr + "-" + dayStr;
+        return Lunar.lunar2solar(lunarDate);
     }
 
     // TODO: 2022/11/26 该方法可通用
@@ -218,10 +322,18 @@ public class MatchStandardization {
     private static String conversionsYear(String deepMatchedStr) {
         String year;
         String yearMatched = getDeepMatchedStr(YEAR_FORWARD_REGEX, deepMatchedStr);
+        //匹配数字年份
+        String yearNumStr = getDeepMatchedStr("\\d{2,4}", yearMatched);
         if (!yearMatched.isEmpty()) {
-            if (yearMatched.matches("\\d")) {
+            if (!yearNumStr.isEmpty()) {
                 //全是数字
-                year = yearMatched;
+                if (yearNumStr.length() == 2) {
+                    //两位数字，转换成四位
+                    year = yearTwo2Four(yearNumStr);
+                } else {
+                    //四位数字
+                    year = yearMatched;
+                }
             } else {
                 //中文数字
                 String yearNum = cn2num(yearMatched);
@@ -245,14 +357,16 @@ public class MatchStandardization {
      */
     private static String conversionsMonthOrDay(String monthOrDayMatched) {
         String monthOrDay;
-        if (monthOrDayMatched.matches("\\d")) {
+        //匹配月或日的数字表示（不要用matches，你不了解它，太坑了！）
+        String mdNumStr = getDeepMatchedStr("\\d{1,2}", monthOrDayMatched);
+        if (!mdNumStr.isEmpty()) {
             //数字
             monthOrDay = monthOrDayMatched;
         } else {
             //中文
             monthOrDay = cn2arabic(monthOrDayMatched);
         }
-        return monthOrDay;
+        return Festival.addZero(Integer.parseInt(monthOrDay));
     }
 
     /**
@@ -309,7 +423,7 @@ public class MatchStandardization {
     private static String yearTwo2Four(String yearLastTwo) {
         String year;
         int currentYearLastTwo = Integer.parseInt(String.valueOf(currentYear).substring(2));
-        Log.i("getSongsList", "currentYearLastTwo = " + currentYearLastTwo);
+//        Log.i("getSongsList", "currentYearLastTwo = " + currentYearLastTwo);
         if (Integer.parseInt(yearLastTwo) <= currentYearLastTwo) {
             //比当前小，21世纪，前面补20
             year = "20" + yearLastTwo;
@@ -317,7 +431,7 @@ public class MatchStandardization {
             //比当前大，20世纪，前面补19
             year = "19" + yearLastTwo;
         }
-        Log.i("getSongsList", "四位数字年份：" + year);
+//        Log.i("getSongsList", "四位数字年份：" + year);
         return year;
     }
 
