@@ -1,7 +1,6 @@
 package com.example.yidianClock.time_conversions;
 
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.Arrays;
 
 /**
  * 工具类，实现阴阳历互转
@@ -75,20 +74,10 @@ public class Lunar {
             0x0D5252, 0x0DAA47, 0x66B53B, 0x056D4F, 0x04AE45, 0x4A4EB9, 0x0A4D4C, 0x0D1541, 0x2D92B5
     };
 
-    //八月初二
-    //八月初二
-    //八月廿二
-    //正月初九
-    //正月初十
-    //冬月三十
-    //腊月廿九
-    //闰四初七
-    //正月十五
-    //五月廿二
-    
 
     /**
      * 将农历日期转换为公历日期
+     * 农历的闰月可以闰二、三、四、五、六、七、八、九、十月
      * @param year    农历年份
      * @param month   农历月
      * @param monthDay   农历日
@@ -182,7 +171,9 @@ public class Lunar {
         int day = Integer.parseInt(lunarDateArr[2]);
         boolean isLeapMonth = leapMonth(year) != 0;
         int[] solarDateArr = lunarToSolar(year, month, day, isLeapMonth);
-        return solarDateArr[0] + "-" + solarDateArr[1] + "-" + solarDateArr[2];
+        String monthAdd0 = Festival.addZero(solarDateArr[1]);
+        String dayAdd0 = Festival.addZero(solarDateArr[2]);
+        return solarDateArr[0] + "-" + monthAdd0 + "-" + dayAdd0;
     }
 
     /**
@@ -319,7 +310,7 @@ public class Lunar {
         return ((LUNAR_INFO[year - MIN_YEAR] & 0xF00000)) >> 20;
     }
 
-//    public static void main(String[] args) {
+    public static void main(String[] args) {
 //        //计算录入年份是否有闰月
 //        System.out.println(leapMonth(2020));
 //        //传回农历 year年month月的总天数，总共有13个月包括闰月
@@ -328,7 +319,8 @@ public class Lunar {
 //        System.out.println(daysInMonth(2017,6,false));
 //        //阳历转阴历  9.25  10.23 有问题
 //        System.out.println(Arrays.toString(solarToLunar(2022, 3, 2)));
-//        //阴历转阳历
-//        System.out.println(Arrays.toString(lunarToSolar(2020,2,9,true)));
-//    }
+        //阴历转阳历
+        System.out.println(Arrays.toString(lunarToSolar(2020,4,7,true)));
+        System.out.println(lunar2solar("2020-4-7"));
+    }
 }

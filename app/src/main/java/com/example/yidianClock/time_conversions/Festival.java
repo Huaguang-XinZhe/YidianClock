@@ -244,11 +244,11 @@ public class Festival {
         return weekWhat;
     }
 
-    public static void main(String[] args) {
-        String dateStr = solarTerms2dateStr("2002", "立秋");
-        String motherDay = get5month5week5(2021, 5, 2, 7);
-        System.out.println(motherDay);
-    }
+//    public static void main(String[] args) {
+//        String dateStr = solarTerms2dateStr("2002", "立秋");
+//        String motherDay = get5month5week5(2021, 5, 2, 7);
+//        System.out.println(motherDay);
+//    }
 
     /**
      * 对月份或日补零，以获取标准日期

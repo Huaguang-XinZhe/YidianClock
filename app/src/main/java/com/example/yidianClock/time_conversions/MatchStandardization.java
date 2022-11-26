@@ -2,8 +2,10 @@ package com.example.yidianClock.time_conversions;
 
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +26,7 @@ public class MatchStandardization {
     /**
      * 匹配农历日期的正则
      */
-    static final String LUNAR_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?([一二三四五六七八九十正冬仲子腊]月|闰[一二三四五六七八九]|大年)[初十廿三][一二三四五六七八九十]$";
+    static final String LUNAR_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?(闰?[一二三四五六七八九十正冬仲子腊]月|大年)[初十廿三][一二三四五六七八九十]$";
     /**
      * 单独匹配节日
      */
@@ -39,11 +41,11 @@ public class MatchStandardization {
      */
     static final String YEAR_FORWARD_REGEX = "(\\d{2,4}|[〇零一二三四五六七八九]{2,4})(?=年)";
     /**
-     * 匹配月前边的部分
+     * 匹配公历月前边的部分
      */
-    static final String MONTH_FORWARD_REGEX = "(\\d{1,2}|十[一二]|[一二三四五六七八九十])(?=月)";
+    static final String SOLAR_MONTH_FORWARD_REGEX = "(\\d{1,2}|十[一二]|[一二三四五六七八九十])(?=月)";
     /**
-     * 匹配日前边的部分
+     * 匹配日（号）前边的部分
      */
     static final String DAY_FORWARD_REGEX = "(\\d{1,2}|[一二三四五六七八九十]{1,3})(?=[日号])";
     /**
@@ -54,6 +56,25 @@ public class MatchStandardization {
      * 今年，Int型
      */
     static final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+    /**
+     * 农历的月份（中文）与公历月份映射的字符串（农公月映射字符串）数组
+     */
+    static final String[] _LUNAR_MONTH_ARR = new String[] {
+            "正01", "一01", "二02", "三03", "四04", "五05", "六06", "七07", "八08", "九09", "十10",
+            "仲11", "子11", "冬11", "十一11", "腊12", "十二12", "闰二02", "闰三03", "闰四04", "闰五05", "闰六06", "闰七07", "闰八08", "闰九09", "闰十10"
+    };
+    /**
+     * 匹配农历月前边的部分（在农历时间字符串中匹配，如正月十五）
+     */
+    static final String LUNAR_MONTH_FORWARD_REGEX = "闰?[一二三四五六七八九十正冬仲子腊](?=月)";
+    /**
+     * 匹配农历日部分
+     */
+    static final String LUNAR_DAY_REGEX = "[初十廿三][一二三四五六七八九十]";
+    /**
+     * 农历日专用词和数字字符串的映射
+     */
+    static final Map<Character, String> lunarDayMap = new HashMap<>();
 
     static {
         cn_numMap.put('〇', 0);
@@ -68,6 +89,11 @@ public class MatchStandardization {
         cn_numMap.put('八', 8);
         cn_numMap.put('九', 9);
         cn_numMap.put('十', 0);
+
+        lunarDayMap.put('初', "0");
+        lunarDayMap.put('十', "1");
+        lunarDayMap.put('廿', "2");
+        lunarDayMap.put('三', "3");
     }
 
     //含年月日（号）的类型，如：
@@ -94,7 +120,7 @@ public class MatchStandardization {
         String deepMatchedStr = getDeepMatchedStr(YMD_REGEX, matchedStr);
         //有可能为空串，空串就是未来的时间，倒计时
 //        String yearMatched = getDeepMatchedStr(YEAR_FORWARD_REGEX, deepMatchedStr);
-        String monthMatched = getDeepMatchedStr(MONTH_FORWARD_REGEX, deepMatchedStr);
+        String monthMatched = getDeepMatchedStr(SOLAR_MONTH_FORWARD_REGEX, deepMatchedStr);
         String dayMatched = getDeepMatchedStr(DAY_FORWARD_REGEX, deepMatchedStr);
 
         //处理年份，分两种情况：中文和数字。这两种情况下面又分两种情况：四位和两位___________________
@@ -147,16 +173,40 @@ public class MatchStandardization {
     //70年正月初十
     //79年冬月三十
     //八零年腊月廿九
-    //82年闰四初七
+    //82年闰四月初七
     //正月十五
     //五月廿二
     public static String conversionsLunar(String matchedStr) {
-        String date;
         //一定不为空串，结果如上示例
         String deepMatchedStr = getDeepMatchedStr(LUNAR_REGEX, matchedStr);
         //不为空串
         String year = conversionsYear(deepMatchedStr);
+        //处理农历月____________________________________________________________________________
+        String lunarMonthStr = getDeepMatchedStr(LUNAR_MONTH_FORWARD_REGEX, deepMatchedStr);
+        //匹配到的农历月字符串在映射数组中的索引
+        int index = getLunarMonthList().indexOf(lunarMonthStr);
+        //根据索引得到其对应的公历月份
+        String solarMonthStr = getDeepMatchedStr("\\d{2}", _LUNAR_MONTH_ARR[index]);
+        //处理农历日___________________________________________________________________________
+        String lunarDayStr = getDeepMatchedStr(LUNAR_DAY_REGEX, deepMatchedStr);
+        char lunarDayFirst = lunarDayStr.charAt(0);
+        char lunarDayLast = lunarDayStr.charAt(1);
+        String dayStr = lunarDayMap.get(lunarDayFirst) + cn_numMap.get(lunarDayLast);
+        //合并，返回___________________________________________________________________________
+        return year + solarMonthStr + dayStr;
+    }
 
+    // TODO: 2022/11/26 该方法可通用
+    /**
+     * 从农公月映射字符串数组中获取农历月字符串的列表
+     */
+    private static List<String> getLunarMonthList() {
+        List<String> lunarMonthList = new ArrayList<>();
+        for (String _lunarMonth : _LUNAR_MONTH_ARR) {
+            String lunarMonth = getDeepMatchedStr("[\\u4e00-\\u9fa5]+", _lunarMonth);
+            lunarMonthList.add(lunarMonth);
+        }
+        return lunarMonthList;
     }
 
 
