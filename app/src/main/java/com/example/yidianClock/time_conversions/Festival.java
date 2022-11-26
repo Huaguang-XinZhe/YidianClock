@@ -47,10 +47,12 @@ public class Festival {
      * 寿星公式计算特例，匹配节气偏移年份及其增减情况，如2026+
      */
     private static final String OFFSET_REGEX = "\\d{4}[+-]";
-
-    //春节|除夕|过年|中元节|七月半|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|
-    // (元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?
-    static final String[] FESTIVAL_ARR = new String[] {
+    /**
+     * 节日名称及其相应日期（多种形式表征）字符串（完整节日字符串）数组
+     * 春节|除夕|过年|中元节|七月半|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|
+     * (元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?
+     */
+    static final String[] _FESTIVAL_ARR = new String[] {
             //农历部分
             "除夕1230+", "过年1230+", "中元节0715+", "七月半0715+", "鬼节0715+", "元宵0115+", "元宵节0115+",
             "端午0505+", "端午节0505+", "中秋0815+", "中秋节0815+", "重阳0909+", "重阳节0909+", "七夕0707+", "七夕节0707+", "春节0101+",
@@ -59,7 +61,69 @@ public class Festival {
             "儿童节0601", "高考0607", "国庆1001", "国庆节1001", "圣诞1225", "圣诞节1225",
             //第几月的第几个星期几
             "母亲节050207", "父亲节060307"
+            //清明节（由节气来计算）
     };
+    /**
+     * 匹配节日名称的正则
+     */
+    static final String FESTIVAL_REGEX = "[\\u4e00-\\u9fa5]+";
+    /**
+     * 匹配节日后面的日期（含表征符号）的正则
+     */
+    static final String _DATE_REGEX = "\\d{4,6}\\+?";
+
+    /**
+     * 将节日转化为公历的具体日期（1900~2100）
+     * @param yearStr 年份字符串
+     * @param festival 节日名称
+     * @return 标准日期字符串，如2001-11-09
+     */
+    public static String festival2dateStr(String yearStr, String festival) {
+        String date;
+        //传入节日在数组中的索引（关键)
+        int index = getFestivalList().indexOf(festival);
+        //通过索引获取完整节日字符串
+        String _festivalStr = _FESTIVAL_ARR[index];
+        String _dateStr = MatchStandardization.getDeepMatchedStr(_DATE_REGEX, _festivalStr);
+        String oldStr = _dateStr.substring(1, 2);
+        //02-14或12-30+或05-0207
+        String month_day_ = _dateStr.replace(oldStr, oldStr + "-");
+        switch (_dateStr.length()) {
+            case 4:
+                //传入的是公历节日，匹配结果如：0214
+                date = yearStr + month_day_;
+                break;
+            case 5:
+                //传入的是农历节日，匹配结果如：1230+
+                String lunarDate = yearStr + month_day_.replace("+", "");
+                date = Lunar.lunar2solar(lunarDate);
+                break;
+            case 6:
+                //传入的是母亲节或父亲节，匹配结果如：050207
+                int month = Integer.parseInt(_dateStr.substring(0, 2));
+                int num = Integer.parseInt(_dateStr.substring(2, 4));
+                int wek = Integer.parseInt(_dateStr.substring(4, 6));
+                date = get5month5week5(Integer.parseInt(yearStr), month, num, wek);
+                break;
+            default:
+                //最后一种情况，清明节
+                date = solarTerms2dateStr(yearStr, "清明");
+        }
+        return date;
+    }
+
+    /**
+     * 获取完整节日字符串数组中的节日名称，列表返回
+     */
+    private static List<String> getFestivalList() {
+        List<String> festivalList = new ArrayList<>();
+        for (String _festival : _FESTIVAL_ARR) {
+            //一定匹配得到（只匹配一次），不为空串
+            String festival = MatchStandardization.getDeepMatchedStr(FESTIVAL_REGEX, _festival);
+            festivalList.add(festival);
+        }
+        return festivalList;
+    }
 
 
     /**
@@ -140,6 +204,7 @@ public class Festival {
      * 计算某年某月第几个星期几的日期
      * @param num 第几个
      * @param wek 星期几
+     * @return 标准日期，如：2001-11-09
      */
     public static String get5month5week5(int year, int month, int num, int wek) {
         String date = "";

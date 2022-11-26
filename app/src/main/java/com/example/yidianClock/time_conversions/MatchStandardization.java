@@ -2,28 +2,57 @@ package com.example.yidianClock.time_conversions;
 
 import android.util.Log;
 
-import java.time.Year;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class MatchStandardization {
+    /**
+     * 匹配年月日（号）类型
+     */
     static final String YMD_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?" +
             "((\\d{1,2}|十[一二]|[一二三四五六七八九十])月|大年)(\\d{1,2}|[一二三四五六七八九十]{1,3})[日号]";
-    //匹配节日或节气正则表达式（包括年部分）
+    /**
+     * 匹配节日或节气正则表达式（包括年部分）
+     */
     static final String YEAR_IN_FESTIVAL_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?" +
             "(立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒|" +
             "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?))";
-    static final String FESTIVAL_REGEX = "(立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒|" +
-            "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?))";
+    /**
+     * 匹配农历日期的正则
+     */
+    static final String LUNAR_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?([一二三四五六七八九十正冬仲子腊]月|闰[一二三四五六七八九]|大年)[初十廿三][一二三四五六七八九十]$";
+    /**
+     * 单独匹配节日
+     */
+    static final String FESTIVAL_REGEX = "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节" +
+            "|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?))";
+    /**
+     * 单独匹配节气
+     */
+    static final String TERM_REGEX = "立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒";
+    /**
+     * 匹配年前边的部分
+     */
     static final String YEAR_FORWARD_REGEX = "(\\d{2,4}|[〇零一二三四五六七八九]{2,4})(?=年)";
+    /**
+     * 匹配月前边的部分
+     */
     static final String MONTH_FORWARD_REGEX = "(\\d{1,2}|十[一二]|[一二三四五六七八九十])(?=月)";
+    /**
+     * 匹配日前边的部分
+     */
     static final String DAY_FORWARD_REGEX = "(\\d{1,2}|[一二三四五六七八九十]{1,3})(?=[日号])";
+    /**
+     * 中文数字与阿拉伯数字的映射
+     */
     static final Map<Character, Integer> cn_numMap = new HashMap<>();
+    /**
+     * 今年，Int型
+     */
     static final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
     static {
@@ -90,32 +119,51 @@ public class MatchStandardization {
     //01年春分
     /**
      * 将含节日、节气的时间字符串转换为标准日期
-     * @param matchedStr 匹配到的时间字符串
+     * @param matchedStr 匹配到的时间字符串（可能含年也可能不含）
      * @return 标准日期，如：2001-11-09
      */
-    public static String conversionsYearInFestival(String matchedStr) {
-        String year;
+    public static String conversions_festival(String matchedStr) {
+        String date;
+        //一定不为空串，结果如上示例
         String deepMatchedStr = getDeepMatchedStr(YEAR_IN_FESTIVAL_REGEX, matchedStr);
-        year = conversionsYear(deepMatchedStr);
+        //不为空串
+        String year = conversionsYear(deepMatchedStr);
+        //先匹配节日，如果匹配的节日为空，那就再匹配节气
         String festival = getDeepMatchedStr(FESTIVAL_REGEX, deepMatchedStr);
-        // TODO: 2022/11/25 未完待续
-        return "";
+        if (!festival.isEmpty()) {
+            date = Festival.festival2dateStr(year, festival);
+        } else {
+            //匹配到的字符串中一定含有节气，获取它
+            String solarTerm = getDeepMatchedStr(TERM_REGEX, deepMatchedStr);
+            date = Festival.solarTerms2dateStr(year, solarTerm);
+        }
+        return date;
     }
 
-    /**
-     * 转换不含年的节日、节气时间字符串（含高考）
-     * @param festival 节日、节气时间字符串（含高考）
-     * @return 标准月日，如：11-09
-     */
-    private static String conversionsFestival(String festival) {
-        // TODO: 2022/11/25 未完待续
-        return "";
+    //83年八月初二
+    //八三年八月初二
+    //83年八月廿二
+    //九四年正月初九
+    //70年正月初十
+    //79年冬月三十
+    //八零年腊月廿九
+    //82年闰四初七
+    //正月十五
+    //五月廿二
+    public static String conversionsLunar(String matchedStr) {
+        String date;
+        //一定不为空串，结果如上示例
+        String deepMatchedStr = getDeepMatchedStr(LUNAR_REGEX, matchedStr);
+        //不为空串
+        String year = conversionsYear(deepMatchedStr);
+
     }
+
 
     /**
      * 单独转换年份，这个在其他类型的全日期转换中用得着
      * @param deepMatchedStr 含年的时间字符串
-     * @return 返回标准的四位数字年份，不为空串
+     * @return 返回标准的四位数字年份，不为空串（没有年份就是今年）
      */
     private static String conversionsYear(String deepMatchedStr) {
         String year;
