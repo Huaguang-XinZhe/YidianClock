@@ -1,4 +1,4 @@
-package com.example.yidianClock.utils;
+package com.example.yidianClock.utils.timeUtils;
 
 public class TimePoint implements Comparable<TimePoint> {
     private int hour;

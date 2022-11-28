@@ -8,7 +8,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.yidianClock.utils.MyUtils;
-import com.example.yidianClock.utils.TimePoint;
+import com.example.yidianClock.utils.timeUtils.TimePoint;
 import com.example.yidianClock.alarm.YDAlarm;
 
 public class UnlockReceiver extends BroadcastReceiver {

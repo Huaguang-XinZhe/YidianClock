@@ -17,6 +17,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import com.example.yidianClock.utils.timeUtils.TimePoint;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -37,6 +39,28 @@ public class MyUtils {
             myUtils = new MyUtils(context);
         }
         return myUtils;
+    }
+
+    /**
+     * 获取当前日期（今天）的标准化表示，如：2001-11-09
+     */
+    public static String getCurrentDate() {
+        SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CANADA);
+        return sdFormat.format(new Date());
+    }
+
+    /**
+     * 获取标准化日期的int数组
+     * @param date 标准化日期，如：2001-11-09
+     * @return int数组，0：年份，1：月份，2：日
+     */
+    public static int[] getDateArr(String date) {
+        int[] arr = new int[3];
+        String[] dateArr = date.split("-");
+        arr[0]  = Integer.parseInt(dateArr[0]);
+        arr[1] = Integer.parseInt(dateArr[1]);
+        arr[2] = Integer.parseInt(dateArr[2]);
+        return arr;
     }
 
     public static String getCurrentTime() {

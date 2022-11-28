@@ -33,25 +33,32 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.yidianClock.matches.KeyWord;
 import com.example.yidianClock.R;
-import com.example.yidianClock.matches.RegexMatches;
 import com.example.yidianClock.TextBGSpan;
-import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.adapter.MyFSAdapter;
+import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.databinding.ActivityMainBinding;
 import com.example.yidianClock.databinding.FragmentReminderdayBinding;
 import com.example.yidianClock.fragment.HomeFragment;
 import com.example.yidianClock.fragment.ReminderDayFragment;
+import com.example.yidianClock.matches.KeyWord;
+import com.example.yidianClock.matches.RegexMatches;
 import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.SleepAlarm;
 import com.example.yidianClock.receiver.UnlockReceiver;
 import com.example.yidianClock.utils.MyUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.loper7.date_time_picker.DateTimeConfig;
+import com.loper7.date_time_picker.dialog.CardDatePickerDialog;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
+import es.dmoral.toasty.Toasty;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding mainBinding;
@@ -80,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton fab = mainBinding.fab;
         sp = getSharedPreferences("sp", MODE_PRIVATE);
+
 
         //ActionBar左侧设置
         ActionBar actionBar = this.getSupportActionBar();
@@ -186,6 +194,24 @@ public class MainActivity extends AppCompatActivity {
                             setSpan();
                         });
 
+                        //日历图标点击监听
+                        frBinding.imageCalendar.setOnClickListener(v1 -> {
+                            new CardDatePickerDialog.Builder(MainActivity.this)
+                                    .setTitle("日期选择")
+                                    .setThemeColor(getResources().getColor(R.color.green_set_value))
+                                    .setDisplayType(DateTimeConfig.YEAR, DateTimeConfig.MONTH, DateTimeConfig.DAY)
+                                    .showBackNow(false)
+                                    .setChooseDateModel(DateTimeConfig.DATE_LUNAR)
+                                    .setOnChoose("确认", aLong -> {
+                                        SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CANADA);
+                                        String dateStr = sdFormat.format(new Date(aLong));
+                                        Toasty.info(MainActivity.this, "您选择的日期是：" + dateStr, Toasty.LENGTH_SHORT).show();
+                                        return null;
+                                    })
+                                    .build().show();
+
+                        });
+
                         //EditText焦点改变监听
                         remindInput.setOnFocusChangeListener((v1, hasFocus) -> {
                             Log.i("getSongsList", "焦点改变监听");
@@ -210,7 +236,6 @@ public class MainActivity extends AppCompatActivity {
                             public void afterTextChanged(Editable s) {
 //                                Log.i("getSongsList", "editable前 = " + s);
                                 sourceText = s.toString();
-                                // TODO: 2022/11/20 缺一个方法，传入源字符串，得到一个表示时间的字符串
                                 timeStr = RegexMatches.getFirstMatchedStr(RegexMatches.TIME_REGEX, sourceText);
                                 Log.i("getSongsList", "timeStr = " + timeStr);
                                 if (!timeStr.isEmpty() && RegexMatches.getNewMatchedStr(oldSourceText, sourceText) != null) {

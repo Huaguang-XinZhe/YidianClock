@@ -396,6 +396,7 @@ public class SettingActivity extends AppCompatActivity {
         toggleButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 //开启状态
+
                 //启动时间选择器
                 MyPicker myPicker = new MyPicker(this);
                 myPicker.setAndShow(isNoRingBefore);

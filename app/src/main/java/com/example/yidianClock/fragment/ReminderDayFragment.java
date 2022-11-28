@@ -65,15 +65,6 @@ public class ReminderDayFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         frBinding = FragmentReminderdayBinding.inflate(inflater, container, false);
-
-//        if (onListener != null) {
-//            onListener.onExecute(frBinding);
-//        }
-
-        frBinding.imageShock.setOnClickListener(v -> {
-            Toast.makeText(context, "你点击了震动图片", Toast.LENGTH_SHORT).show();
-        });
-
         return frBinding.getRoot();
     }
 

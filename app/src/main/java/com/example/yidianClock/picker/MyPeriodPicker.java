@@ -13,7 +13,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.yidianClock.R;
-import com.example.yidianClock.utils.TimePoint;
+import com.example.yidianClock.utils.timeUtils.TimePoint;
 import com.example.yidianClock.model.LunchAlarm;
 import com.example.yidianClock.model.SleepAlarm;
 import com.google.android.material.bottomsheet.BottomSheetDialog;

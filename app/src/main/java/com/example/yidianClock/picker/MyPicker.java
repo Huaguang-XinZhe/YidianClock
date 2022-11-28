@@ -58,6 +58,11 @@ public class MyPicker {
         timePickerBinding.timePicker.setDescendantFocusability(TimePicker.FOCUS_BLOCK_DESCENDANTS);  //设置点击事件不弹键盘
         timePickerBinding.timePicker.setIs24HourView(true);   //设置时间显示为24小时
 
+        if (!isNoRingBefore) {
+            //不到几点不起床弹窗，改变标题
+            timePickerBinding.tvTitle.setText("不到几点不起床");
+        }
+
         //在TimePicker启动的时候预设时间
         SleepAlarm sleepAlarm = LitePal.findFirst(SleepAlarm.class);
         String[] beforeTimeStrArr;
