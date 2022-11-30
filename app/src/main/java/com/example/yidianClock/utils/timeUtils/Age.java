@@ -1,9 +1,18 @@
 package com.example.yidianClock.utils.timeUtils;
 
+import android.text.format.DateFormat;
+import android.util.Log;
+
 import com.example.yidianClock.time_conversions.Festival;
 import com.example.yidianClock.utils.MyUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
 
 /**
  * 年龄计算工具类（包括周岁、虚岁）
@@ -88,7 +97,7 @@ public class Age {
      * 获取生日在今年的目标日，即今年的生日
      * @param dateOfBirth 标准化格式的出生日期，如：2001-11-09
      */
-    private static String getBirthdayThisYear(String dateOfBirth) {
+    public static String getBirthdayThisYear(String dateOfBirth) {
         String birthYear = dateOfBirth.split("-")[0];
         return dateOfBirth.replace(birthYear, currentYear + "");
     }
@@ -104,9 +113,39 @@ public class Age {
         return currentYear - year;
     }
 
-    public static void main(String[] args) {
-        int age = Age.calculateVirtualYears("1998-10-07");
-        int realAge = Age.calculateRealYears("2001-11-09");
-        System.out.println(realAge);
+    /**
+     * 获取现在和生日的天数差（当年的生日还没过）
+     * @param dateOfBirth 标准化格式的出生日期，如：2001-11-09
+     */
+    public static int getDaysDiff(String dateOfBirth) {
+        Log.i("getSongsList", "getDaysDiff 执行！");
+        Calendar calendar = Calendar.getInstance();
+        //计算现在日期在当年的第几天
+        int currentDay = calendar.get(Calendar.DAY_OF_YEAR);
+//        //更新Calendar对象的值
+//        int[] dateArr = MyUtils.getDateArr(dateOfBirth);
+//        calendar.set(dateArr[0], dateArr[1], dateArr[2]);
+        SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CANADA);
+        try {
+            //解析可能出错，必须放在try-catch块中处理；解析出来的值可能为null，必须判空
+            Date birthDate = sdFormat.parse(dateOfBirth);
+            if (birthDate != null) {
+                //必须用Date对象来更新Calendar对象，否则获取的DAY_OF_YEAR会出异常
+                calendar.setTime(birthDate);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //计算生日当天在当年的第几天
+        int birthDay = calendar.get(Calendar.DAY_OF_YEAR);
+        return birthDay - currentDay;
     }
+
+//    public static void main(String[] args) {
+////        int age = Age.calculateVirtualYears("1998-10-07");
+////        int realAge = Age.calculateRealYears("2001-11-09");
+////        System.out.println(realAge);
+//        System.out.println(getDaysDiff("2022-12-10"));
+//
+//    }
 }

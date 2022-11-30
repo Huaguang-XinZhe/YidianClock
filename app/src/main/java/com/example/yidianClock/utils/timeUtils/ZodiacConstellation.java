@@ -29,7 +29,7 @@ public class ZodiacConstellation {
         int year = Integer.parseInt(dateArr[0]);
         int month = Integer.parseInt(dateArr[1]);
         int day = Integer.parseInt(dateArr[2]);
-        arr[0] = calculateTheZodiac(year);
+        arr[0] = "属" + calculateTheZodiac(year);
         arr[1] = calculateTheConstellations(month, day);
         return arr;
     }

@@ -1,8 +1,156 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.2dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:background="@color/gray_light_dividing_line"/>
 
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-</RelativeLayout>
+        <RelativeLayout
+            android:layout_width="90dp"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/image_head"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/tian_xie"/>
+
+            <TextView
+                android:id="@+id/tv_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="生日"
+                android:layout_alignParentEnd="true"
+                android:background="@drawable/shape_label"
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:layout_marginTop="5dp"/>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="我自己"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/tv_age"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="21周岁"
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/selector_label_age"
+                    android:textColor="@color/green_light"
+                    android:textSize="8sp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_gravity="center_vertical"/>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:id="@+id/tv_theConstellation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="天蝎"/>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="10dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@color/gray_light_dividing_line"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="5dp"/>
+
+                <TextView
+                    android:id="@+id/tv_chineseZodiac"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="蛇"/>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/layout_days"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_daysNum"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="344"
+                    android:textColor="@color/green_set_value"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="10dp"
+                    android:text="天"
+                    android:textColor="@color/green_set_value"
+                    android:textSize="15sp" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <TextView
+                android:id="@+id/tv_tip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="还有"
+                android:textSize="11sp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/layout_days"/>
+
+        </RelativeLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.appcompat.widget.LinearLayoutCompat>
