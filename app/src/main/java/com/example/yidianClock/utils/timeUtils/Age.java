@@ -113,34 +113,6 @@ public class Age {
         return currentYear - year;
     }
 
-    /**
-     * 获取现在和生日的天数差（当年的生日还没过）
-     * @param dateOfBirth 标准化格式的出生日期，如：2001-11-09
-     */
-    public static int getDaysDiff(String dateOfBirth) {
-        Log.i("getSongsList", "getDaysDiff 执行！");
-        Calendar calendar = Calendar.getInstance();
-        //计算现在日期在当年的第几天
-        int currentDay = calendar.get(Calendar.DAY_OF_YEAR);
-//        //更新Calendar对象的值
-//        int[] dateArr = MyUtils.getDateArr(dateOfBirth);
-//        calendar.set(dateArr[0], dateArr[1], dateArr[2]);
-        SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CANADA);
-        try {
-            //解析可能出错，必须放在try-catch块中处理；解析出来的值可能为null，必须判空
-            Date birthDate = sdFormat.parse(dateOfBirth);
-            if (birthDate != null) {
-                //必须用Date对象来更新Calendar对象，否则获取的DAY_OF_YEAR会出异常
-                calendar.setTime(birthDate);
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        //计算生日当天在当年的第几天
-        int birthDay = calendar.get(Calendar.DAY_OF_YEAR);
-        return birthDay - currentDay;
-    }
-
 //    public static void main(String[] args) {
 ////        int age = Age.calculateVirtualYears("1998-10-07");
 ////        int realAge = Age.calculateRealYears("2001-11-09");

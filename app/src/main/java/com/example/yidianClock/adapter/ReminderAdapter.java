@@ -1,15 +1,22 @@
 package com.example.yidianClock.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.yidianClock.R;
 import com.example.yidianClock.databinding.ItemReminderBinding;
 import com.example.yidianClock.model.Reminder;
+import com.example.yidianClock.utils.MyUtils;
 import com.example.yidianClock.utils.timeUtils.Age;
 import com.example.yidianClock.utils.timeUtils.ZodiacConstellation;
 
@@ -24,6 +31,10 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
      * 星座和头像的映射map
      */
     static final Map<String, Integer> imageMap = new HashMap<>();
+    /**
+     * 星座
+     */
+    String theConstellation;
 
     static {
         imageMap.put("天蝎座", R.drawable.tian_xie);
@@ -49,6 +60,12 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
     @Override
     public InnerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ItemReminderBinding binding = ItemReminderBinding.inflate(LayoutInflater.from(context), parent, false);
+
+        //只执行一次的代码可以放在此处（避免在onBindViewHolder中重复执行）
+        //不能采用下面这个方法去获取Drawable对象，颜色设置的时候会出问题（和位置无关）
+//        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.shape_label);//获取drawable对象
+//        gradientDrawable = (GradientDrawable) drawable;//强转为GradientDrawable对象
+
         return new InnerHolder(binding);
     }
 
@@ -63,26 +80,33 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
         /*
         根据数据映射、计算、判断
          */
-        //设置头像
         String birthDate = reminderList.get(position).getDate();
-        String theConstellation = ZodiacConstellation.getArr(birthDate)[1];
-        Integer imageResource = imageMap.get(theConstellation);//此处通过星座取值一定不为空
-        if (imageResource != null) {
-            holder.itemReminderBinding.imageHead.setImageResource(imageResource);
+        theConstellation = ZodiacConstellation.getArr(birthDate)[1];
+        //根据label更新头像和label背景颜色
+        updateWithLabel(label, holder);
+        //只有生日才计算年龄、生肖和星座，不是生日就不计算，并隐藏View
+        if (label.equals("生日")) {
+            //设置年龄
+            String ageStr = Age.calculateRealYears(birthDate) + "周岁";
+            holder.itemReminderBinding.tvAge.setText(ageStr);
+            //设置生肖
+            String chineseZodiac = ZodiacConstellation.getArr(birthDate)[0];
+            holder.itemReminderBinding.tvChineseZodiac.setText(chineseZodiac);
+            //设置星座
+            holder.itemReminderBinding.tvTheConstellation.setText(theConstellation);
+//            //View可见
+//            holder.itemReminderBinding.tvAge.setVisibility(View.VISIBLE);
+//            holder.itemReminderBinding.tvChineseZodiac.setVisibility(View.VISIBLE);
+//            holder.itemReminderBinding.tvTheConstellation.setVisibility(View.VISIBLE);
+        } else {
+            //View不可见
+            holder.itemReminderBinding.tvAge.setVisibility(View.GONE);
+            holder.itemReminderBinding.layoutSxXz.setVisibility(View.GONE);
         }
-        //设置年龄
-        String ageStr = Age.calculateRealYears(birthDate) + "周岁";
-        holder.itemReminderBinding.tvAge.setText(ageStr);
-        //设置生肖
-        String chineseZodiac = ZodiacConstellation.getArr(birthDate)[0];
-        holder.itemReminderBinding.tvChineseZodiac.setText(chineseZodiac);
-        //设置星座
-        holder.itemReminderBinding.tvTheConstellation.setText(theConstellation);
-        //设置目标日离现在的天数
-        // TODO: 2022/11/30 这里计算生日之间的间距要改为目标日
-        String daysDiffStr = Age.getDaysDiff(birthDate) + "";
+        //设置目标日离现在的天数（返回-1的结果不在此处处理，在输入时会处理好，保证不出现返回-1的情况出现）
+        int daysDiff = MyUtils.getDaysDiff(birthDate);
         //往setText()方法中传值要尤为谨慎，非资源的int型值一定要先转为String才行！！！
-        holder.itemReminderBinding.tvDaysNum.setText(daysDiffStr);
+        holder.itemReminderBinding.tvDaysNum.setText(String.valueOf(daysDiff));
         //设置天数下面的提示
         String tip = "还有";
         if (label.equals("生日")) {
@@ -105,5 +129,50 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
             itemReminderBinding = binding;
         }
     }
+
+    /**
+     * 跟随标签更新设置：
+     * 1. 头像上生日、纪念日等标签的背景颜色；
+     * 2. 头像
+     * @param label 标签
+     * @param holder InnerHolder对象，持有View
+     */
+    private void updateWithLabel(String label, InnerHolder holder) {
+        int colorRes;
+        Integer imageRes;
+        switch (label) {
+            case "生日":
+                colorRes = context.getResources().getColor(R.color.orange);
+                imageRes = imageMap.get(theConstellation);//此处通过星座取值一定不为空
+                break;
+            case "纪念日":
+                colorRes = context.getResources().getColor(R.color.pink);
+                imageRes = R.drawable.day_of_remembrance;
+                break;
+            case "节日":
+                colorRes = context.getResources().getColor(R.color.red);
+                imageRes = R.drawable.to_celebrate;
+                break;
+            case "倒计时":
+                colorRes = context.getResources().getColor(R.color.blue);
+                imageRes = R.drawable.countdown;
+                break;
+            default:
+                colorRes = context.getResources().getColor(R.color.gray_time_length);
+                imageRes = R.drawable.add_black;
+        }
+        //根据label改变shape背景颜色
+        GradientDrawable gradientDrawable = (GradientDrawable) holder.itemReminderBinding.tvLabel.getBackground();
+        if (gradientDrawable != null) {
+//            gradientDrawable.mutate();//加了这行代码颜色变化就不管用了，依然是原来的颜色
+            gradientDrawable.setColor(colorRes);
+
+        }
+        //设置头像
+        if (imageRes != null) {
+            holder.itemReminderBinding.imageHead.setImageResource(imageRes);
+        }
+    }
+
 
 }

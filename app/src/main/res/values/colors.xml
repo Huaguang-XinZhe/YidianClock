@@ -15,4 +15,8 @@
     <color name="hintColor">#757575</color>
     <color name="green_dark">#135200</color>
     <color name="green_light">#389e0d</color>
+    <color name="orange">#e67e22</color>
+    <color name="pink">#e84393</color>
+    <color name="red">#c12c1f</color>
+    <color name="blue">#3742fa</color>
 </resources>

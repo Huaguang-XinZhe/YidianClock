@@ -47,6 +47,7 @@ public class ReminderDayFragment extends Fragment {
         Reminder reminder6 = new Reminder("结婚 3 周年", "纪念日", "2022-12-19");
         Reminder reminder7 = new Reminder("高考", "倒计时", "2023-06-07");
         Reminder reminder8 = new Reminder("期末考试", "倒计时", "2022-12-30");
+        Reminder reminder9 = new Reminder("其他", "未知", "2011-11-12");
         reminderList.add(reminder1);
         reminderList.add(reminder2);
         reminderList.add(reminder3);
@@ -55,6 +56,7 @@ public class ReminderDayFragment extends Fragment {
         reminderList.add(reminder6);
         reminderList.add(reminder7);
         reminderList.add(reminder8);
+        reminderList.add(reminder9);
         //不能加入空 item，必须在底部填充一个不同类型的 item
 //        //加入空 item
 //        reminderList.add(new Reminder("", "", ""));
