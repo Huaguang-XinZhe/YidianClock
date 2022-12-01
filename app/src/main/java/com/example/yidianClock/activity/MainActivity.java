@@ -44,8 +44,10 @@ import com.example.yidianClock.fragment.ReminderDayFragment;
 import com.example.yidianClock.matches.KeyWord;
 import com.example.yidianClock.matches.RegexMatches;
 import com.example.yidianClock.model.LunchAlarm;
+import com.example.yidianClock.model.Reminder;
 import com.example.yidianClock.model.SleepAlarm;
 import com.example.yidianClock.receiver.UnlockReceiver;
+import com.example.yidianClock.time_conversions.MatchStandardization;
 import com.example.yidianClock.utils.MyUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -69,8 +71,10 @@ public class MainActivity extends AppCompatActivity {
     ActionBarDrawerToggle drawerToggle;
     //用的多，就立个变量
     EditText remindInput;
-    //引用ReminderDayFragment中的binding对象
+    //引用ReminderDayFragment中的binding对象，交给Fragment赋值
     public FragmentReminderdayBinding frBinding;
+    //持有ReminderDayFragment对象的引用
+    ReminderDayFragment rdFragment;
     String sourceText;
     TextWatcher textWatcher;
     String timeStr;
@@ -87,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton fab = mainBinding.fab;
         sp = getSharedPreferences("sp", MODE_PRIVATE);
-
+        rdFragment = new ReminderDayFragment(this);
 
         //ActionBar左侧设置
         ActionBar actionBar = this.getSupportActionBar();
@@ -162,6 +166,8 @@ public class MainActivity extends AppCompatActivity {
                         //提醒日点击
                         //在此对EditText初次实例化
                         remindInput = frBinding.editRemindInput;
+//                        //一开始就设置发送图标不可点击（不管用，不管在哪里设置都不管用）
+//                        remindInput.setText("");
                         //隐藏光标下面的水滴
                         ColorDrawable colorDrawable = new ColorDrawable(Color.TRANSPARENT);
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -212,6 +218,55 @@ public class MainActivity extends AppCompatActivity {
 
                         });
 
+                        //发送按钮点击监听
+                        frBinding.imageSend.setOnClickListener(v1 -> {
+                            Log.i("getSongsList", "发送点击！");
+                            //为防止没输入（sourceText为null，不是空串）就点击发送，而执行崩溃，故先判空
+                            if (sourceText != null) {
+                                Log.i("getSongsList", "输入框非空执行！");
+                                if (timeStr.isEmpty()) {
+                                    String tip = "您还没有输入时间，请输入\n或点击输入框左侧的日历图标选择";
+                                    Toasty.warning(MainActivity.this, tip, Toasty.LENGTH_SHORT).show();
+                                } else {
+                                    //时间标准化
+                                    String standardTime = MatchStandardization.conversions(timeStr);
+                                    Log.i("getSongsList", "standardTime = " + standardTime);
+                                    //判断输入的时间是否远超当前时间（至少是后年）
+                                    if (MyUtils.getDaysDiff(standardTime) == -1) {
+                                        //远超，全选文本，提示重新输入
+                                        remindInput.setSelection(0, sourceText.length()-1);
+                                        Toasty.warning(MainActivity.this, "您的输入远超当前时间，暂不支持", Toasty.LENGTH_SHORT).show();
+                                    } else {
+                                        //正常，可发送于列表中显示
+                                        //获取title和标签
+                                        String[] displayArr = RegexMatches.getDisplay(sourceText, timeStr, standardTime);
+                                        String title = displayArr[0];
+                                        String label = displayArr[1];
+//                                Reminder reminder = new Reminder(title, label, standardTime);
+//                                rdFragment.reminderList.add(reminder);
+//                                Log.i("getSongsList", "reminderList = " + rdFragment.reminderList);
+//                                //新增刷新（放在第一位）
+//                                rdFragment.adapter.notifyItemInserted(0);
+                                        String tip = label + "提醒设置成功！\n目标日：" + standardTime;
+                                        Toasty.success(MainActivity.this, tip, Toasty.LENGTH_SHORT).show();
+                                        //清空文本
+                                        remindInput.setText("");
+                                    }
+                                }
+                            } else {
+                                Log.i("getSongsList", "sourceText为null执行！");
+                                //刚开始未输入时，发送按钮禁止点击
+                                frBinding.imageSend.setClickable(false);
+                            }
+                        });
+
+                        //删除按钮点击监听
+                        frBinding.imageDelete.setOnClickListener(v1 -> {
+                            //直接这么干是没用的，必须对EditText操作，改变源头
+//                            sourceText = "";
+                            remindInput.setText("");
+                        });
+
                         //EditText焦点改变监听
                         remindInput.setOnFocusChangeListener((v1, hasFocus) -> {
                             Log.i("getSongsList", "焦点改变监听");
@@ -234,17 +289,35 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void afterTextChanged(Editable s) {
-//                                Log.i("getSongsList", "editable前 = " + s);
                                 sourceText = s.toString();
                                 timeStr = RegexMatches.getFirstMatchedStr(RegexMatches.TIME_REGEX, sourceText);
                                 Log.i("getSongsList", "timeStr = " + timeStr);
+                                //更新UI————————————————————————————————————————————————————————————
+                                if (!sourceText.isEmpty()) {
+                                    //显示删除按钮
+                                    frBinding.imageDelete.setVisibility(View.VISIBLE);
+                                    //发送图标实化，变黑
+                                    frBinding.imageSend.setImageResource(R.drawable.upload_black);
+                                    //发送图标允许点击
+                                    frBinding.imageSend.setClickable(true);
+                                } else {
+                                    //隐藏删除按钮
+                                    frBinding.imageDelete.setVisibility(View.GONE);
+                                    //发送图标虚化，变灰
+                                    frBinding.imageSend.setImageResource(R.drawable.upload_gray);
+                                    //发送图标禁止点击
+                                    frBinding.imageSend.setClickable(false);
+                                }
+                                //为匹配到的时间文本设置Span，以示区分
                                 if (!timeStr.isEmpty() && RegexMatches.getNewMatchedStr(oldSourceText, sourceText) != null) {
                                     setSpan();
                                     //设置了Span后更新旧的源文本
                                     oldSourceText = sourceText;
                                     Log.i("getSongsList", "oldSourceText = " + oldSourceText);
                                 }
-                                Log.i("getSongsList", "输入改变");
+                                //数据处理———————————————————————————————————————————————————————————
+
+                                Log.i("getSongsList", "输入改变后的操作全部完成");
                             }
                         };
                         remindInput.addTextChangedListener(textWatcher);

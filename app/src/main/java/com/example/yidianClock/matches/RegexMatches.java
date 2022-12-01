@@ -1,7 +1,8 @@
 package com.example.yidianClock.matches;
 
 
-import android.util.Log;
+import com.example.yidianClock.time_conversions.MatchStandardization;
+import com.example.yidianClock.utils.timeUtils.Age;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,52 +10,76 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RegexMatches {
+    /**
+     * 匹配时间字符串
+     */
     public static final String TIME_REGEX = "((\\d{2,4}|[零一二三四五六七八九]{2,4})[年\\./-])?" +
             "(((\\d{1,2}|十[一二]|闰?[一二三四五六七八九十正冬仲子腊])[月\\./-]" +
             "|大年)((\\d{1,2}|[一二三四五六七八九十]{1,3})[日号]?|[初廿三][一二三四五六七八九十])" +
             "|(立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒" +
             "|春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?))";
-    public static final String KEYWORD_REGEX = "生日|结婚|恋爱";
+    /**
+     * 匹配标签关键词
+     */
+    public static final String KEYWORD_REGEX = "的?生日|结婚|恋爱|相恋" +
+            "|春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?" +
+            "|立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒";
 
+    //老妈生日、结婚、""（高考、节气或节日）
+    /**
+     * 获取展示在列表item中的标题和头像上的标签
+     * @param source 源文本
+     * @param timeStr 时间源文本，不为空串
+     * @param standardTime 标准化后的时间
+     * @return 0：title，1：label
+     */
+    public static String[] getDisplay(String source, String timeStr, String standardTime) {
+        String title;
+        String label;
+        //源文本去除时间字符串，可能为空串
+        String surplus = source.replace(timeStr, "");
+        String keyWord = MatchStandardization.getDeepMatchedStr(KEYWORD_REGEX, source);
+        if (keyWord.contains("生日")) {
+            title = surplus.replace(keyWord, "");
+            label = "生日";
+        } else if (isMatched("结婚|恋爱|相恋", keyWord)) {
+            //计算几周年
+            int num = Age.calculateRealYears(standardTime) + 1;
+            title = keyWord + " " + num + " 周年";
+            label = "纪念日";
+        } else if (isMatched(MatchStandardization.FESTIVAL_REGEX, keyWord)) {
+            title = source;
+            if (keyWord.equals("高考")) {
+                label = "倒计时";
+            } else {
+                label = "节日";
+            }
+        } else if (isMatched(MatchStandardization.TERM_REGEX, keyWord)) {
+            title = source;
+            if (keyWord.equals("清明")) {
+                //大多数人不会关注清明这个节气，而只会关注这个节日
+                label = "节日";
+            } else {
+                label = "节气";
+            }
+        }  else {
+            title = surplus;
+            label = "倒计时";
+        }
+        String[] displayArr = new String[2];
+        displayArr[0] = title;
+        displayArr[1] = label;
+        return displayArr;
+    }
 
     /**
-     * 获取展示在列表item中的标题
-     * @param source 源文本
-     * @return 如果匹配到了就返回，一定有值，不会为null。
-     * 匹配到时间和关键词的处理后返回，匹配到时间没匹配到关键词的返回说明，什么都没匹配到的返回空字符串
+     * 指定文本是否能用给定的正则匹配
+     * @param regex 正则
+     * @param text 要深入匹配的文本（只匹配一次）
+     * @return true：能匹配，false：不能匹配
      */
-    public static String getDisplayTitle(String source) {
-        String displayStr;
-        String matchedTimeStr = getFirstMatchedStr(TIME_REGEX, source);
-        if (!matchedTimeStr.isEmpty()) {
-            //如：老妈生日、结婚、""（高考、节气或节日）
-            String surplus = source.replace(matchedTimeStr, "");
-            String keyWord = getFirstMatchedStr(KEYWORD_REGEX, surplus);
-            Log.i("getSongsList", "keyWord = " + keyWord);
-            switch (keyWord) {
-                case "生日":
-                    displayStr = surplus.replace(keyWord, "");
-                    // TODO: 2022/11/23 匹配图标、计算生肖、星座（交给外边来实现）
-                    break;
-                case "结婚":
-                case "恋爱":
-                    // TODO: 2022/11/23 有待计算结婚或恋爱几周年
-                    displayStr = keyWord + " " + "几" + " 周年";
-                    break;
-                case "":
-                    //高考、节气或节日
-                    displayStr = matchedTimeStr;
-                    break;
-                default:
-                    displayStr = "匹配到了时间，但是没匹配到关键词";
-
-            }
-        } else {
-            //时间都没匹配到就展示空字符串
-            displayStr = "";
-        }
-        Log.i("getSongsList", "displayStr = " + displayStr);
-        return displayStr;
+    public static boolean isMatched(String regex, String text) {
+        return !MatchStandardization.getDeepMatchedStr(regex, text).isEmpty();
     }
 
     /**

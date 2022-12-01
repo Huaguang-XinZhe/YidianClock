@@ -24,6 +24,16 @@ public class Reminder extends LitePalSupport {
 
     //——————————————————————————————————————————————————————————————————————————————————————————————
 
+
+    @Override
+    public String toString() {
+        return "Reminder{" +
+                "name='" + name + '\'' +
+                ", date='" + date + '\'' +
+                ", label='" + label + '\'' +
+                '}';
+    }
+
     public String getName() {
         return name;
     }

@@ -33,12 +33,12 @@ public class MatchStandardization {
     /**
      * 单独匹配节日
      */
-    static final String FESTIVAL_REGEX = "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节" +
+    public static final String FESTIVAL_REGEX = "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节" +
             "|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?";
     /**
      * 单独匹配节气
      */
-    static final String TERM_REGEX = "立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒";
+    public static final String TERM_REGEX = "立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒";
     /**
      * 匹配年前边的部分（整合了格式化日期和混合日期型）
      */

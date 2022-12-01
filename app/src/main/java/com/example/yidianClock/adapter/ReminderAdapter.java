@@ -153,6 +153,10 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
                 colorRes = context.getResources().getColor(R.color.red);
                 imageRes = R.drawable.to_celebrate;
                 break;
+            case "节气":
+                colorRes = context.getResources().getColor(R.color.brown);
+                imageRes = R.drawable.solar_terms;
+                break;
             case "倒计时":
                 colorRes = context.getResources().getColor(R.color.blue);
                 imageRes = R.drawable.countdown;

@@ -25,8 +25,9 @@ import java.util.List;
 public class ReminderDayFragment extends Fragment {
     Context context;
     FragmentReminderdayBinding frBinding;
-    ReminderAdapter adapter;
+    public ReminderAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
+    public List<Reminder> reminderList = new ArrayList<>();
 
     public ReminderDayFragment(Context context) {
         this.context = context;
@@ -36,27 +37,9 @@ public class ReminderDayFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        List<Reminder> reminderList = new ArrayList<>();
-
         //自备数据
-        Reminder reminder1 = new Reminder("我自己", "生日", "2001-11-09");
-        Reminder reminder2 = new Reminder("老妈", "生日", "1977-04-09");
-        Reminder reminder3 = new Reminder("师父", "生日", "1981-03-24");
-        Reminder reminder4 = new Reminder("强哥", "生日", "1998-10-07");
-        Reminder reminder5 = new Reminder("母亲节", "节日", "2023-05-08");
-        Reminder reminder6 = new Reminder("结婚 3 周年", "纪念日", "2022-12-19");
-        Reminder reminder7 = new Reminder("高考", "倒计时", "2023-06-07");
-        Reminder reminder8 = new Reminder("期末考试", "倒计时", "2022-12-30");
-        Reminder reminder9 = new Reminder("其他", "未知", "2011-11-12");
-        reminderList.add(reminder1);
-        reminderList.add(reminder2);
-        reminderList.add(reminder3);
-        reminderList.add(reminder4);
-        reminderList.add(reminder5);
-        reminderList.add(reminder6);
-        reminderList.add(reminder7);
-        reminderList.add(reminder8);
-        reminderList.add(reminder9);
+        initData();
+
         //不能加入空 item，必须在底部填充一个不同类型的 item
 //        //加入空 item
 //        reminderList.add(new Reminder("", "", ""));
@@ -90,6 +73,29 @@ public class ReminderDayFragment extends Fragment {
         if (activity != null) {
             activity.frBinding = frBinding;
         }
+    }
+
+    private void initData() {
+        Reminder reminder1 = new Reminder("我自己", "生日", "2001-11-09");
+        Reminder reminder2 = new Reminder("老妈", "生日", "1977-04-09");
+        Reminder reminder3 = new Reminder("师父", "生日", "1981-03-24");
+        Reminder reminder4 = new Reminder("强哥", "生日", "1998-10-07");
+        Reminder reminder5 = new Reminder("母亲节", "节日", "2023-05-08");
+        Reminder reminder6 = new Reminder("结婚 3 周年", "纪念日", "2022-12-19");
+        Reminder reminder7 = new Reminder("高考", "倒计时", "2023-06-07");
+        Reminder reminder8 = new Reminder("期末考试", "倒计时", "2022-12-30");
+        Reminder reminder9 = new Reminder("其他", "未知", "2011-11-12");
+        Reminder reminder10 = new Reminder("小满", "节气", "2022-12-11");
+        reminderList.add(reminder1);
+        reminderList.add(reminder2);
+        reminderList.add(reminder3);
+        reminderList.add(reminder4);
+        reminderList.add(reminder5);
+        reminderList.add(reminder6);
+        reminderList.add(reminder7);
+        reminderList.add(reminder8);
+        reminderList.add(reminder9);
+        reminderList.add(reminder10);
     }
 
 }
