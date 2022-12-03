@@ -1,16 +1,12 @@
 package com.example.yidianClock.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.yidianClock.R;
@@ -94,10 +90,9 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
             holder.itemReminderBinding.tvChineseZodiac.setText(chineseZodiac);
             //设置星座
             holder.itemReminderBinding.tvTheConstellation.setText(theConstellation);
-//            //View可见
-//            holder.itemReminderBinding.tvAge.setVisibility(View.VISIBLE);
-//            holder.itemReminderBinding.tvChineseZodiac.setVisibility(View.VISIBLE);
-//            holder.itemReminderBinding.tvTheConstellation.setVisibility(View.VISIBLE);
+            //View可见
+            holder.itemReminderBinding.tvAge.setVisibility(View.VISIBLE);
+            holder.itemReminderBinding.layoutSxXz.setVisibility(View.VISIBLE);
         } else {
             //View不可见
             holder.itemReminderBinding.tvAge.setVisibility(View.GONE);
@@ -151,7 +146,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
                 break;
             case "节日":
                 colorRes = context.getResources().getColor(R.color.red);
-                imageRes = R.drawable.to_celebrate;
+                imageRes = R.drawable.festival;
                 break;
             case "节气":
                 colorRes = context.getResources().getColor(R.color.brown);

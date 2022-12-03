@@ -27,7 +27,9 @@
         android:layout_alignParentBottom="true"
         android:paddingTop="20dp"
         android:paddingBottom="25dp"
-        android:background="@drawable/shape_bg_input">
+        android:background="@drawable/shape_bg_input"
+        android:visibility="gone">
+
 
         <ImageView
             android:id="@+id/image_calendar"

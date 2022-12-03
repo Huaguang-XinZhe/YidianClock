@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class MyUtils {
@@ -42,6 +43,26 @@ public class MyUtils {
             myUtils = new MyUtils(context);
         }
         return myUtils;
+    }
+
+    /**
+     * 根据标准化时间计算目标日（此处提供的standardTime必然是合法日期，不会远超当前日期）
+     * @param standardTime 输入匹配时间标准化后的时间，此处称为标准化时间
+     * @return 目标日，标准化格式返回，如：2001-11-09
+     */
+    public static String calGoalDay(String standardTime) {
+        String goalDate;
+        Calendar calendar = Calendar.getInstance();
+        int currentYear = calendar.get(Calendar.YEAR);
+        int sdYear= getDateArr(standardTime)[0];
+        if (isGoalOver(standardTime)) {
+            //如果标准化时间已经过了，那目标日就往上加一年
+            goalDate = standardTime.replace(sdYear + "", sdYear + 1 + "");
+        } else {
+            //没过的话就直接返回
+            goalDate = standardTime;
+        }
+        return goalDate;
     }
 
     /**

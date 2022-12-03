@@ -160,18 +160,19 @@ public class MatchStandardization {
 
     }
 
-//    public static void main(String[] args) {
-//        String[] sourceArr = new String[] {
+    public static void main(String[] args) {
+        String[] sourceArr = new String[] {
+                  "春节", "除夕"
 //                "2011.11.9", "一九七七年四月九日", "1977年4月9日", "2001-11-9", "77年4月9号", "01年11月9号",
 //                "81-3-4", "01/4/19", "83年八月初二"
-////                "八三年八月初二", "83年元旦", "九四年重阳节", "01年春分",
-////                "八三年十二月二十三日", "九四年正月初九"
-////                "70年正月初十", "79年冬月三十", "八零年腊月廿九", "82年闰四月初七", "九八年10-7", "立冬", "小雪"
-//        };
-//        for (String source : sourceArr) {
-//            System.out.println(conversions(source));
-//        }
-//    }
+//                "八三年八月初二", "83年元旦", "九四年重阳节", "01年春分",
+//                "八三年十二月二十三日", "九四年正月初九"
+//                "70年正月初十", "79年冬月三十", "八零年腊月廿九", "82年闰四月初七", "九八年10-7", "立冬", "小雪"
+        };
+        for (String source : sourceArr) {
+            System.out.println(conversions(source));
+        }
+    }
 
     //2011.11.9
     //2001-11-9

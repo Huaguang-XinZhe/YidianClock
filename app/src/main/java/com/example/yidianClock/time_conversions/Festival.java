@@ -60,8 +60,9 @@ public class Festival {
             "元旦0101", "元旦节0101", "情人节0214", "五一0501", "劳动节0501", "六一0601",
             "儿童节0601", "高考0607", "国庆1001", "国庆节1001", "圣诞1225", "圣诞节1225",
             //第几月的第几个星期几
-            "母亲节050207", "父亲节060307"
+            "母亲节050207", "父亲节060307",
             //清明节（由节气来计算）
+            "清明节", "清明"
     };
     /**
      * 匹配节日名称的正则
@@ -74,6 +75,7 @@ public class Festival {
 
     /**
      * 将节日转化为公历的具体日期（1900~2100）
+     * 可能产生空串，但一般不会
      * @param yearStr 年份字符串
      * @param festival 节日名称
      * @return 标准日期字符串，如2001-11-09
@@ -85,30 +87,35 @@ public class Festival {
         //通过索引获取完整节日字符串
         String _festivalStr = _FESTIVAL_ARR[index];
         String _dateStr = MatchStandardization.getDeepMatchedStr(_DATE_REGEX, _festivalStr);
-        String oldStr = _dateStr.substring(1, 2);
-        //02-14或12-30+或05-0207
-        //该方法有风险，替换可能有多个！！！一定要使用replaceFirst，而不是replace
-        String month_day_ = _dateStr.replaceFirst(oldStr, oldStr + "-");
-        switch (_dateStr.length()) {
-            case 4:
-                //传入的是公历节日，匹配结果如：0214
-                date = yearStr + "-" + month_day_;
-                break;
-            case 5:
-                //传入的是农历节日，匹配结果如：1230+
-                String lunarDate = yearStr + "-" + month_day_.replace("+", "");
-                date = Lunar.lunar2solar(lunarDate);
-                break;
-            case 6:
-                //传入的是母亲节或父亲节，匹配结果如：050207
-                int month = Integer.parseInt(_dateStr.substring(0, 2));
-                int num = Integer.parseInt(_dateStr.substring(2, 4));
-                int wek = Integer.parseInt(_dateStr.substring(4, 6));
-                date = get5month5week5(Integer.parseInt(yearStr), month, num, wek);
-                break;
-            default:
-                //最后一种情况，清明节
-                date = solarTerms2dateStr(yearStr, "清明");
+        if (!_dateStr.isEmpty()) {
+            //除清明外的节日————————————————————————————————————————————————————————————————
+            String oldStr = _dateStr.substring(1, 2);
+            //02-14或12-30+或05-0207
+            //该方法有风险，替换可能有多个！！！一定要使用replaceFirst，而不是replace
+            String month_day_ = _dateStr.replaceFirst(oldStr, oldStr + "-");
+            switch (_dateStr.length()) {
+                case 4:
+                    //传入的是公历节日，匹配结果如：0214
+                    date = yearStr + "-" + month_day_;
+                    break;
+                case 5:
+                    //传入的是农历节日，匹配结果如：1230+
+                    String lunarDate = yearStr + "-" + month_day_.replace("+", "");
+                    date = Lunar.lunar2solar(lunarDate);
+                    break;
+                case 6:
+                    //传入的是母亲节或父亲节，匹配结果如：050207
+                    int month = Integer.parseInt(_dateStr.substring(0, 2));
+                    int num = Integer.parseInt(_dateStr.substring(2, 4));
+                    int wek = Integer.parseInt(_dateStr.substring(4, 6));
+                    date = get5month5week5(Integer.parseInt(yearStr), month, num, wek);
+                    break;
+                default:
+                    date = "";
+            }
+        } else {
+            //清明节————————————————————————————————————————————————————————————————————————
+            date = solarTerms2dateStr(yearStr, "清明");
         }
         return date;
     }
