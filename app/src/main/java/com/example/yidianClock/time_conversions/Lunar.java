@@ -78,6 +78,8 @@ public class Lunar {
     /**
      * 将农历日期转换为公历日期
      * 农历的闰月可以闰二、三、四、五、六、七、八、九、十月
+     * 注意，这个方法有点问题，2022春节 -> [2022, 2, 1]，2023除夕 -> [2023, 1, 21]，
+     * 即输入同样的年份，返回最终结果却不是同一个年份的，不过在其返回年份输入转换是正确的。
      * @param year    农历年份
      * @param month   农历月
      * @param monthDay   农历日
@@ -171,10 +173,19 @@ public class Lunar {
         int day = Integer.parseInt(lunarDateArr[2]);
         boolean isLeapMonth = leapMonth(year) != 0;
         int[] solarDateArr = lunarToSolar(year, month, day, isLeapMonth);
+        System.out.println(Arrays.toString(solarDateArr));
         String monthAdd0 = Festival.addZero(solarDateArr[1]);
         String dayAdd0 = Festival.addZero(solarDateArr[2]);
         return solarDateArr[0] + "-" + monthAdd0 + "-" + dayAdd0;
     }
+
+//    public static void main(String[] args) {
+//        //2022正月初一，春节
+//        String sp = lunar2solar("2022-01-01");
+//        //2022冬月三十，除夕
+//        String sp2 = lunar2solar("2022-12-30");
+//        System.out.println("春节：" + sp + "，除夕" + sp2);
+//    }
 
     /**
      * 将公历日期转换为农历日期，且标识是否是闰月

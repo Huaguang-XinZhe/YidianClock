@@ -1,5 +1,7 @@
 package com.example.yidianClock.time_conversions;
 
+import com.example.yidianClock.utils.MyUtils;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -119,11 +121,16 @@ public class MatchStandardization {
     }
 
     /**
-     * 对外接口，将一切形式的时间字符串转换为标准时间字符串，如：2001-11-09
+     * 对外接口，将一切形式的时间字符串转换为标准时间字符串，并得到其类型和深入匹配字符串
+     * 这个方法产生的标准化时间，产生的是原始日
      * @param matchedStr 目前只支持四种类型（互不重叠），几月几日（号）型、格式化或混合型、节日或节气型、农历型
+     * @return 0：标准化日期，1：类型
      */
-    public static String conversions(String matchedStr) {
+    public static String[] conversions(String matchedStr) {
+        String[] dpArr = new String[2];
         String date;
+        String type;
+        //与其说这是深入匹配不如说是分开匹配
         String deepMatchedStr = "";
         int count = 0;
         int index = 0;
@@ -143,36 +150,125 @@ public class MatchStandardization {
             case 0:
                 //年月日（号）类型
                 date = conversionsYMD(year, deepMatchedStr);
+                type = "directly";
                 break;
             case 1:
                 date = conversionsFMDate(year, deepMatchedStr);
+                type = "directly";
                 break;
             case 2:
                 date = conversions_festival(year, deepMatchedStr);
+                type = "term_festival";
                 break;
             case 3:
                 date = conversionsLunar(year, deepMatchedStr);
+                type = "lunar";
                 break;
             default:
-                date = "无法解析";
+                //一般不会出现，一旦出现就返回今天的日期
+                date = MyUtils.getCurrentDate();
+                type = "directly";
+        }
+        dpArr[0] = date;
+        dpArr[1] = type;
+        return dpArr;
+
+    }
+
+    /**
+     * 获取目标日（最终调用）
+     * @param timeStr 时间字符串
+     * @param priDate 待进一步处理的刚标准化的日期（出现在哪个阶段都有可能）
+     * @param type 时间字符串的类型
+     * @return 标准化的目标日，若返回空串，则表示原始日远超当前日期
+     */
+    public static String getGoalDay(String timeStr, String priDate, String type) {
+        String date;
+        String _date;
+        int priYear = MyUtils.getDateArr(priDate)[0];
+        if (MyUtils.isOver(priDate)) {
+            //已经过了，根据类型初步处理（注意，虽然原标准化日期已经过了，但根据类型处理后却不一定就过了
+            switch (type) {
+                case "directly":
+                    //年份切换到当年即可
+                    _date = priDate.replace(priYear + "", currentYear + "");
+                    break;
+                case "term_festival":
+                    //节日节气型，切换到今年，计算
+                    _date = conversions_festival(currentYear + "", timeStr);
+                    break;
+                case "lunar":
+                    //农历型，切换到今年，计算
+                    _date = conversionsLunar(currentYear + "", timeStr);
+                    break;
+                default:
+                    //一般用不着
+                    _date = MyUtils.getCurrentTime();
+
+            }
+            //集中处理，得到最终的目标日
+            date = transToGoalDay(_date, type, timeStr);
+        } else {
+            //还没过
+            if (priYear == currentYear || priYear - currentYear == 1) {
+                //原始日在今年或明年，是目标日的正确表示方式
+                date = priDate;
+            } else {
+                //原始日为后年及以上的年份
+                date = "";
+            }
         }
         return date;
-
     }
 
-    public static void main(String[] args) {
-        String[] sourceArr = new String[] {
-                  "春节", "除夕"
-//                "2011.11.9", "一九七七年四月九日", "1977年4月9日", "2001-11-9", "77年4月9号", "01年11月9号",
-//                "81-3-4", "01/4/19", "83年八月初二"
-//                "八三年八月初二", "83年元旦", "九四年重阳节", "01年春分",
-//                "八三年十二月二十三日", "九四年正月初九"
-//                "70年正月初十", "79年冬月三十", "八零年腊月廿九", "82年闰四月初七", "九八年10-7", "立冬", "小雪"
-        };
-        for (String source : sourceArr) {
-            System.out.println(conversions(source));
+    /**
+     * 将初步处理过的在今年的日期转换成目标日
+     * @param _date 原始日经过初步处理后的日期，在今年
+     * @param type 时间字符串的类型
+     * @param timeStr 匹配到的时间字符串
+     * @return 真正的目标日，标准化格式
+     */
+    private static String transToGoalDay(String _date, String type, String timeStr) {
+        String date;
+        if (MyUtils.isOver(_date)) {
+            //已经过去，根据类型计算目标日
+            switch (type) {
+                case "directly":
+                    //年份+1，替换即可
+                    date = _date.replace(currentYear + "", currentYear + 1 + "");
+                    break;
+                case "term_festival":
+                    //节日节气型（已经切换到今年），年份+1，计算
+                    date = conversions_festival(currentYear + 1 + "", timeStr);
+                    break;
+                case "lunar":
+                    //农历型，年份+1
+                    date = conversionsLunar(currentYear + 1 + "", timeStr);
+                    break;
+                default:
+                    date = MyUtils.getCurrentTime();
+
+            }
+        } else {
+            //还没过，直接返回
+            date = _date;
         }
+        return date;
     }
+
+//    public static void main(String[] args) {
+//        String[] sourceArr = new String[] {
+//                  "春节", "除夕"
+////                "2011.11.9", "一九七七年四月九日", "1977年4月9日", "2001-11-9", "77年4月9号", "01年11月9号",
+////                "81-3-4", "01/4/19", "83年八月初二"
+////                "八三年八月初二", "83年元旦", "九四年重阳节", "01年春分",
+////                "八三年十二月二十三日", "九四年正月初九"
+////                "70年正月初十", "79年冬月三十", "八零年腊月廿九", "82年闰四月初七", "九八年10-7", "立冬", "小雪"
+//        };
+//        for (String source : sourceArr) {
+//            System.out.println(conversions(source));
+//        }
+//    }
 
     //2011.11.9
     //2001-11-9

@@ -249,6 +249,8 @@ public class MainActivity extends AppCompatActivity {
 
                         //发送按钮点击监听
                         frBinding.imageSend.setOnClickListener(v1 -> {
+                            //输入时间文本的类型
+                            String type;
                             Log.i("getSongsList", "发送点击！");
 //                            //为防止没输入（sourceText为null，不是空串）就点击发送，而执行崩溃，故先判空
 //                            if (sourceText != null) {
@@ -266,11 +268,17 @@ public class MainActivity extends AppCompatActivity {
                             //时间标准化
                             //如果时间来自输入框，就执行转换逻辑
                             if (isFromInput) {
-                                standardTime = MatchStandardization.conversions(timeStr);
+                                String[] dpArr = MatchStandardization.conversions(timeStr);
+                                standardTime = dpArr[0];
+                                type = dpArr[1];
+                            } else {
+                                //来自日历选择
+                                type = "directly";
                             }
                             Log.i("getSongsList", "standardTime = " + standardTime);
                             //判断输入的时间是否远超当前时间（至少是后年）
-                            if (MyUtils.getDaysDiff(standardTime) == -1) {
+                            String goalDay = MatchStandardization.getGoalDay(timeStr, standardTime, type);
+                            if (goalDay.isEmpty()) {
                                 Toasty.error(MainActivity.this, "您的输入远超当前时间，暂不支持", Toasty.LENGTH_SHORT).show();
                                 return;
                             }
@@ -279,20 +287,25 @@ public class MainActivity extends AppCompatActivity {
                             String[] displayArr = RegexMatches.getDisplay(sourceText, timeStr, standardTime);
                             String title = displayArr[0];
                             String label = displayArr[1];
+                            //输入如：33年12月9日去吃饭，解析成：1933-12-09倒计时，这不妥，故警示
+                            if (standardTime.contains("19") && label.equals("倒计时")) {
+                                Toasty.error(MainActivity.this, "您的输入远超当前时间，暂不支持", Toasty.LENGTH_SHORT).show();
+                                return;
+                            }
                             //判断输入title列表中是否已经存在，已经存在便不重复输入
                             if (Reminder.containsTitle(reminderList, title)) {
                                 Toasty.error(MainActivity.this, "该提醒已存在！", Toasty.LENGTH_SHORT).show();
                                 return;
                             }
                             //return之后下面的代码就不会执行！
-                            Reminder reminder = new Reminder(title, label, standardTime);
+                            Reminder reminder = new Reminder(title, label, standardTime, type, timeStr);
                             reminderList.add(0, reminder);
                             Log.i("getSongsList", "reminderList = " + reminderList);
                             //新增刷新（放在第一位），这个方法默认会从list的position位取数据，放在position位
                             adapter.notifyItemInserted(0);
                             layoutManager.scrollToPosition(0);
-                            Log.i("getSongsList", "目标日是：" + MyUtils.calGoalDay(standardTime));
-                            String tip = label + "提醒设置成功！\n目标日：" + MyUtils.calGoalDay(standardTime);
+                            //必须是目标日
+                            String tip = label + "提醒设置成功！\n目标日：" + goalDay;
                             Toasty.success(MainActivity.this, tip, Toasty.LENGTH_LONG).show();
                             //清空文本
                             remindInput.setText("");

@@ -46,29 +46,8 @@ public class MyUtils {
     }
 
     /**
-     * 根据标准化时间计算目标日（此处提供的standardTime必然是合法日期，不会远超当前日期）
-     * @param standardTime 输入匹配时间标准化后的时间，此处称为标准化时间
-     * @return 目标日，标准化格式返回，如：2001-11-09
-     */
-    public static String calGoalDay(String standardTime) {
-        String goalDate;
-        Calendar calendar = Calendar.getInstance();
-        int currentYear = calendar.get(Calendar.YEAR);
-        int sdYear= getDateArr(standardTime)[0];
-        if (isGoalOver(standardTime)) {
-            //如果标准化时间已经过了，那目标日就往上加一年
-            goalDate = standardTime.replace(sdYear + "", sdYear + 1 + "");
-        } else {
-            //没过的话就直接返回
-            goalDate = standardTime;
-        }
-        return goalDate;
-    }
-
-    /**
-     * 获取当前日期和目标日差距的天数，如果目标日已经过了，就往上再加一年
-     * @param goalDay 目标日，可能已经过了，也可能没过
-     * @return 相差的天数，始终为正值
+     * 获取当前日期和目标日差距的天数
+     * @param goalDay 目标日（一定还没到，不在今年就在明年）
      */
     public static int getDaysDiff(String goalDay) {
         int diff;
@@ -76,41 +55,21 @@ public class MyUtils {
         int currentYear = calendar.get(Calendar.YEAR);
         //计算现在日期在当年的第几天
         int currentDay = calendar.get(Calendar.DAY_OF_YEAR);
-        System.out.println("currentDay = " + currentDay);
-        //原目标日的年
+        //计算目标日当天在当年的第几天
+        int day = getDayOfYear(goalDay);
+        //目标日的年
         int year= getDateArr(goalDay)[0];
-        //计算目标年（还没有加一）总共有多少天
-        int daysThisYear = calHowDaysInThisYear(year);
-        System.out.println("原目标日一年有多少天：" + daysThisYear);
         //这是今年还剩多少天（即今天之后还有多少天）
-        int remainDays = daysThisYear - currentDay;
-        System.out.println("原目标日在今年还剩下多少天：" + remainDays);
-        if (isGoalOver(goalDay)) {
-            //原目标日已经过去了——————————————————————————————————————————————————————————————
-            String _goalDay = goalDay.replace(year + "", year + 1 + "");
-            System.out.println("_goalDay = " + _goalDay);
-            //计算新目标日（年份加了一）当天在当年的第几天
-            int newDay = getDayOfYear(_goalDay);
-            System.out.println("新目标日：newDay = " + newDay);
-            diff =  remainDays + newDay;
-        } else {
-            //原目标日还没到——————————————————————————————————————————————————————————————————
-            //计算原目标日当天在当年的第几天
-            int day = getDayOfYear(goalDay);
-            //原目标日和今年的年份差
-            int diffYear = year - currentYear;
-            if (diffYear == 0) {
-                //目标日为今年
-                diff = day - currentDay;
-            } else if (diffYear == 1) {
-                //目标日为明年
-                diff = remainDays + day;
-            } else {
-                //目标日为后年及以上的年份（太远了，计算得到的天数很大，暂不支持，故返回-1）
-                diff = -1;
-            }
+        int remainDays = calHowDaysInThisYear(currentYear) - currentDay;
 
+        if (year == currentYear) {
+            //目标日在今年
+            diff = day - currentDay;
+        } else {
+            //目标日在明年
+            diff = remainDays + day;
         }
+
         return diff;
     }
 
@@ -152,14 +111,14 @@ public class MyUtils {
 //    }
 
     /**
-     * 判断目标日是否过去（是否在当前日期的后边）
+     * 判断指定日期是否过去（是否在当前日期的后边）
      * 注意，当天不算过了
-     * @param goalDay 目标日
+     * @param date 指定日期
      * @return true：过了，false：没过
      */
-    public static boolean isGoalOver(String goalDay) {
+    public static boolean isOver(String date) {
         MyDate currentDate = new MyDate(MyUtils.getCurrentDate());
-        MyDate goalDate = new MyDate(goalDay);
+        MyDate goalDate = new MyDate(date);
         return currentDate.compareTo(goalDate) > 0;
     }
 

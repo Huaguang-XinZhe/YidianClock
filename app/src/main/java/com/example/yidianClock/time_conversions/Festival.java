@@ -120,6 +120,12 @@ public class Festival {
         return date;
     }
 
+//    public static void main(String[] args) {
+//        String sp = festival2dateStr("2022", "春节");
+//        String sp2 = festival2dateStr("2022", "除夕");
+//        System.out.println("春节 = " + sp + "，除夕" + sp2);
+//    }
+
     /**
      * 获取完整节日字符串数组中的节日名称，列表返回
      */

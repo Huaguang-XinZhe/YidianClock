@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.yidianClock.R;
 import com.example.yidianClock.databinding.ItemReminderBinding;
 import com.example.yidianClock.model.Reminder;
+import com.example.yidianClock.time_conversions.MatchStandardization;
 import com.example.yidianClock.utils.MyUtils;
 import com.example.yidianClock.utils.timeUtils.Age;
 import com.example.yidianClock.utils.timeUtils.ZodiacConstellation;
@@ -72,21 +73,22 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
          */
         String label = reminderList.get(position).getLabel();
         holder.itemReminderBinding.tvLabel.setText(label);
-        holder.itemReminderBinding.tvName.setText(reminderList.get(position).getName());
+        holder.itemReminderBinding.tvName.setText(reminderList.get(position).getTitle());
         /*
         根据数据映射、计算、判断
          */
-        String birthDate = reminderList.get(position).getDate();
-        theConstellation = ZodiacConstellation.getArr(birthDate)[1];
+        //这里取的是原始日期，不是目标日
+        String priDate = reminderList.get(position).getPriDate();
+        theConstellation = ZodiacConstellation.getArr(priDate)[1];
         //根据label更新头像和label背景颜色
         updateWithLabel(label, holder);
         //只有生日才计算年龄、生肖和星座，不是生日就不计算，并隐藏View
         if (label.equals("生日")) {
             //设置年龄
-            String ageStr = Age.calculateRealYears(birthDate) + "周岁";
+            String ageStr = Age.calculateRealYears(priDate) + "周岁";
             holder.itemReminderBinding.tvAge.setText(ageStr);
             //设置生肖
-            String chineseZodiac = ZodiacConstellation.getArr(birthDate)[0];
+            String chineseZodiac = ZodiacConstellation.getArr(priDate)[0];
             holder.itemReminderBinding.tvChineseZodiac.setText(chineseZodiac);
             //设置星座
             holder.itemReminderBinding.tvTheConstellation.setText(theConstellation);
@@ -98,8 +100,10 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.InnerH
             holder.itemReminderBinding.tvAge.setVisibility(View.GONE);
             holder.itemReminderBinding.layoutSxXz.setVisibility(View.GONE);
         }
-        //设置目标日离现在的天数（返回-1的结果不在此处处理，在输入时会处理好，保证不出现返回-1的情况出现）
-        int daysDiff = MyUtils.getDaysDiff(birthDate);
+        //设置目标日离现在的天数
+        String goalDay = MatchStandardization.getGoalDay(reminderList.get(position).getTimeStr(),
+                priDate, reminderList.get(position).getType());//根据原始日计算目标日
+        int daysDiff = MyUtils.getDaysDiff(goalDay);//根据目标日得到相差天数，此处的goalDay不为空串，远超当前日期的情况会在发送时判断避免
         //往setText()方法中传值要尤为谨慎，非资源的int型值一定要先转为String才行！！！
         holder.itemReminderBinding.tvDaysNum.setText(String.valueOf(daysDiff));
         //设置天数下面的提示
