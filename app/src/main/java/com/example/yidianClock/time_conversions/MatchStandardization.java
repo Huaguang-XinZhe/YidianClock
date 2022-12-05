@@ -1,5 +1,7 @@
 package com.example.yidianClock.time_conversions;
 
+import android.util.Log;
+
 import com.example.yidianClock.utils.MyUtils;
 
 import java.util.ArrayList;
@@ -15,23 +17,23 @@ public class MatchStandardization {
     /**
      * 匹配年月日（号）类型
      */
-    static final String YMD_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?" +
+    static final String YMD_REGEX = "((\\d{2,4}|[去今前明]|[〇零一二三四五六七八九]{2,4})年)?" +
             "((\\d{1,2}|十[一二]|[一二三四五六七八九十])月|大年)(\\d{1,2}|[一二三四五六七八九十]{1,3})[日号]";
     /**
      * 匹配节日或节气正则表达式（包括年部分）
      */
-    static final String YEAR_IN_FESTIVAL_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?" +
+    static final String YEAR_IN_FESTIVAL_REGEX = "((\\d{2,4}|[去今前明]|[〇零一二三四五六七八九]{2,4})年)?" +
             "(立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒|" +
             "春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?)";
     /**
      * 匹配农历日期的正则
      */
-    static final String LUNAR_REGEX = "((\\d{2,4}|[〇零一二三四五六七八九]{2,4})年)?(闰?[一二三四五六七八九十正冬仲子腊]月|大年)[初十廿三][一二三四五六七八九十]$";
+    static final String LUNAR_REGEX = "((\\d{2,4}|[去今前明]|[〇零一二三四五六七八九]{2,4})年)?(闰?[一二三四五六七八九十正冬仲子腊]月|大年)[初十廿三][一二三四五六七八九十]$";
     /**
      * 匹配格式化的日期、混合型日期，如：01/11/9，九八年10-7
      * 注意，这里的年份有可能不存在
      */
-    static final String FM_DATE_REGEX = "((\\d{2,4}|[零一二三四五六七八九]{2,4})[年./-])?\\d{1,2}[\\./-]\\d{1,2}";
+    static final String FM_DATE_REGEX = "((\\d{2,4}|[去今前明]|[零一二三四五六七八九]{2,4})[年./-])?\\d{1,2}[\\./-]\\d{1,2}";
     /**
      * 单独匹配节日
      */
@@ -44,7 +46,7 @@ public class MatchStandardization {
     /**
      * 匹配年前边的部分（整合了格式化日期和混合日期型）
      */
-    static final String YEAR_FORWARD_REGEX = "^(\\d{2,4}|[〇零一二三四五六七八九]{2,4})(?=[年\\./-])";
+    static final String YEAR_FORWARD_REGEX = "^(\\d{2,4}|[去今前明]|[〇零一二三四五六七八九]{2,4})(?=[年\\./-])";
     /**
      * 匹配公历月前边的部分
      */
@@ -418,7 +420,26 @@ public class MatchStandardization {
      */
     private static String conversionsYear(String deepMatchedStr) {
         String year;
+        //匹配年份前面的部分
         String yearMatched = getDeepMatchedStr(YEAR_FORWARD_REGEX, deepMatchedStr);
+        //匹配去年、今年、前年、明年
+        String yearCN = getDeepMatchedStr("[去今前明]", yearMatched);
+        if(!yearCN.isEmpty()) {
+            switch (yearCN) {
+                case "去":
+                    year = currentYear - 1 + "";
+                    break;
+                case "前":
+                    year = currentYear - 2 + "";
+                    break;
+                case "明":
+                    year = currentYear + 1 + "";
+                    break;
+                default:
+                    year = currentYear + "";
+            }
+            return year;
+        }
         //匹配数字年份
         String yearNumStr = getDeepMatchedStr("\\d{2,4}", yearMatched);
         if (!yearMatched.isEmpty()) {

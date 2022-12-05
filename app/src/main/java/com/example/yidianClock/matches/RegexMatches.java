@@ -1,6 +1,8 @@
 package com.example.yidianClock.matches;
 
 
+import android.util.Log;
+
 import com.example.yidianClock.time_conversions.MatchStandardization;
 import com.example.yidianClock.utils.timeUtils.Age;
 
@@ -13,7 +15,7 @@ public class RegexMatches {
     /**
      * 匹配时间字符串
      */
-    public static final String TIME_REGEX = "((\\d{2,4}|[零一二三四五六七八九]{2,4})[年\\./-])?" +
+    public static final String TIME_REGEX = "((\\d{2,4}|[去今前明]|[零一二三四五六七八九]{2,4})[年\\./-])?" +
             "(((\\d{1,2}|十[一二]|闰?[一二三四五六七八九十正冬仲子腊])[月\\./-]" +
             "|大年)((\\d{1,2}|[一二三四五六七八九十]{1,3})[日号]?|[初廿三][一二三四五六七八九十])" +
             "|(立春|雨水|惊蛰|春分|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒" +
@@ -21,7 +23,7 @@ public class RegexMatches {
     /**
      * 匹配标签关键词
      */
-    public static final String KEYWORD_REGEX = "的?生日|结婚|恋爱|相恋" +
+    public static final String KEYWORD_REGEX = "的?生日|结的?婚|恋爱|相恋" +
             "|春节|除夕|过年|中元节|七月半|鬼节|母亲节|父亲节|五一|劳动节|六一|儿童节|情人节|高考|(元旦|元宵|清明|端午|中秋|重阳|国庆|七夕|圣诞)节?" +
             "|立春|雨水|惊蛰|春分|清明|谷雨|立夏|小满|芒种|夏至|小暑|大暑|立秋|处暑|白露|秋分|寒露|霜降|立冬|小雪|大雪|冬至|小寒|大寒";
 
@@ -38,33 +40,44 @@ public class RegexMatches {
         String label;
         //源文本去除时间字符串，可能为空串
         String surplus = source.replace(timeStr, "");
-        String keyWord = MatchStandardization.getDeepMatchedStr(KEYWORD_REGEX, source);
-        if (keyWord.contains("生日")) {
-            title = surplus.replace(keyWord, "");
-            label = "生日";
-        } else if (isMatched("结婚|恋爱|相恋", keyWord)) {
-            //计算几周年
-            int num = Age.calculateRealYears(standardTime) + 1;
-            title = keyWord + " " + num + " 周年";
-            label = "纪念日";
-        } else if (isMatched(MatchStandardization.FESTIVAL_REGEX, keyWord)) {
-            title = source;
-            if (keyWord.equals("高考")) {
+        String keyWord = chooseKeyWordFromList(getMatchedList(KEYWORD_REGEX, source));
+        Log.i("getSongsList", "keyWord = " + keyWord);
+        if (!surplus.isEmpty()) {
+            if (keyWord.contains("生日")) {
+                title = surplus.replace(keyWord, "");
+                label = "生日";
+            } else if (isMatched("结的?婚|恋爱|相恋", keyWord)) {
+                //计算几周年
+                int num = Age.calculateRealYears(standardTime) + 1;
+                if (keyWord.contains("婚")) {
+                    title = "结婚" + " " + num + " 周年";
+                } else {
+                    title = "恋爱" + " " + num + " 周年";
+                }
+                label = "纪念日";
+            } else {
+                title = surplus;
                 label = "倒计时";
-            } else {
-                label = "节日";
             }
-        } else if (isMatched(MatchStandardization.TERM_REGEX, keyWord)) {
-            title = source;
-            if (keyWord.equals("清明")) {
-                //大多数人不会关注清明这个节气，而只会关注这个节日
-                label = "节日";
+        } else {
+            if (isMatched(MatchStandardization.FESTIVAL_REGEX, keyWord)) {
+                title = source;
+                if (keyWord.equals("高考")) {
+                    label = "倒计时";
+                } else {
+                    label = "节日";
+                }
+                // if (isMatched(MatchStandardization.TERM_REGEX, keyWord))
+                //除了节日，只可能是节气了
             } else {
-                label = "节气";
+                title = source;
+                if (keyWord.equals("清明")) {
+                    //大多数人不会关注清明这个节气，而只会关注这个节日
+                    label = "节日";
+                } else {
+                    label = "节气";
+                }
             }
-        }  else {
-            title = surplus;
-            label = "倒计时";
         }
         String[] displayArr = new String[2];
         displayArr[0] = title;
@@ -83,33 +96,41 @@ public class RegexMatches {
     }
 
     /**
-     * 获取第一个匹配到的字符串，匹配不到就返回空字符串
+     * 从指定列表中挑选优先关键词，没有就返回第一个元素，列表为空就返回空串
      */
-    public static String getFirstMatchedStr(String regex, String source) {
+    private static String chooseKeyWordFromList(List<String> list) {
+        String keyWord = "";
+        if (list.isEmpty()) {
+            return keyWord;
+        }
+        keyWord = list.get(0);
+        //优先级关键词列表
+        String[] priorityKWArr = new String[] {
+                "生日", "结的婚", "结婚", "恋爱", "相恋"
+        };
+        if (list.size() > 1) {
+            //遍历优先级列表
+            for (String priorityKW : priorityKWArr) {
+                if (list.contains(priorityKW)) {
+                    keyWord = priorityKW;
+                    break;
+                }
+            }
+        }
+        return keyWord;
+    }
+
+    /**
+     * 获取匹配字符串组成的List，该list有可能为空（一个都没匹配到）
+     */
+    public static List<String> getMatchedList(String regex, String source) {
+        List<String> matchedStrList = new ArrayList<>();
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(source);
-//        //matcher.matches()是完全匹配，必须全部匹配才行。
-//        //如匹配数字，源字符串全是数字matches才为true，有一个字符不为数字都不行。
-//        if (matcher.matches()) {
-//        } else return null;
-        //总共有9个分组
-//            Log.i("getSongsList", "groupCount = " + matcher.groupCount());
-        List<String> matchedStrList = new ArrayList<>();
         while (matcher.find()) {
             matchedStrList.add(matcher.group());
         }
-        if (!matchedStrList.isEmpty()) {
-            return matchedStrList.get(0);
-        } else return "";
-        //返回的是二者的连接字符串，中间没有间隔（2014年4月1日2013年4月15日）
-//        return builder.toString();
-
-//        while (matcher.find()) {
-        //我嘞个乖乖，matcher.find()调用一次就消耗一次，你都调用两次了还问自己为什么只提取到一个值？你也太逗了吧！
-        //操！耗了老子几个小时在这种无关紧要的细节上！！！
-//            System.out.println("find = " + matcher.find());
-//            System.out.println(matcher.group());
-//        }
+        return matchedStrList;
 
     }
 
@@ -119,8 +140,8 @@ public class RegexMatches {
      */
     public static String getNewMatchedStr(String oldSource, String newSource) {
         //如果不存在KeyWord则返回空字符串
-        String oldKeyWord = getFirstMatchedStr(TIME_REGEX, oldSource);
-        String newKeyWord = getFirstMatchedStr(TIME_REGEX, newSource);
+        String oldKeyWord = MatchStandardization.getDeepMatchedStr(TIME_REGEX, oldSource);
+        String newKeyWord = MatchStandardization.getDeepMatchedStr(TIME_REGEX, newSource);
         if (!newKeyWord.equals(oldKeyWord)) {
             return newKeyWord;
         } else {

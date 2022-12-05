@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -56,6 +57,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.loper7.date_time_picker.DateTimeConfig;
 import com.loper7.date_time_picker.dialog.CardDatePickerDialog;
+
+import org.litepal.LitePal;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -165,6 +168,14 @@ public class MainActivity extends AppCompatActivity {
                     if (frBinding != null && frBinding.layoutInput.getVisibility() == View.VISIBLE) {
                         //隐藏后来的底部输入框
                         frBinding.layoutInput.setVisibility(View.GONE);
+                        //此时adapter不为null，调回list尾部布局的高度
+                        adapter.setOnListener((holder, layoutParams) -> {
+                            layoutParams.height = 50*3;
+                            holder.itemView.setLayoutParams(layoutParams);
+                            Log.i("getSongsList", "底部布局已恢复！");
+                        });
+                        //必须更新UI才能执行实现
+                        adapter.notifyItemChanged(reminderList.size()-1);
                     }
                     fab.setImageResource(R.drawable.add);
                 } else {
@@ -177,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     fab.setImageResource(R.drawable.alarm);
                 }
-                // TODO: 2022/11/16 fab监听有待区分position 
+
                 //fab短按监听
                 fab.setOnClickListener(v -> {
                     if (position == 0) {
@@ -215,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
 //                            MyUtils.getInstance(dialog.getContext()).showSoftInput(remindInput);
 //                        }, 150);
 //                        dialog.show();
+
 
                         //撤销图标点击监听
                         frBinding.imageRevoke.setOnClickListener(v1 -> {
@@ -255,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
 //                            //为防止没输入（sourceText为null，不是空串）就点击发送，而执行崩溃，故先判空
 //                            if (sourceText != null) {
 //                                Log.i("getSongsList", "输入框非空执行！");
-                                //隐藏输入部分（切换到其他场景），之后再回来，sourceText为空串，不为null，且行首的光标又没了
+                            //隐藏输入部分（切换到其他场景），之后再回来，sourceText为空串，不为null，且行首的光标又没了
                             if (timeStr.isEmpty()) {
                                 String tip = "您还没有输入或选择时间！";
                                 Toasty.warning(MainActivity.this, tip, Toasty.LENGTH_SHORT).show();
@@ -298,7 +310,9 @@ public class MainActivity extends AppCompatActivity {
                                 return;
                             }
                             //return之后下面的代码就不会执行！
-                            Reminder reminder = new Reminder(title, label, standardTime, type, timeStr);
+                            Reminder reminder = new Reminder(title, label, MyUtils.getDate(goalDay), type, timeStr);
+                            //将数据存储到数据库
+                            reminder.save();
                             reminderList.add(0, reminder);
                             Log.i("getSongsList", "reminderList = " + reminderList);
                             //新增刷新（放在第一位），这个方法默认会从list的position位取数据，放在position位
@@ -349,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
                                 //允许触发才能执行以下逻辑
                                 if (isTriggerTextChange) {
                                     sourceText = s.toString();
-                                    timeStr = RegexMatches.getFirstMatchedStr(RegexMatches.TIME_REGEX, sourceText);
+                                    timeStr = MatchStandardization.getDeepMatchedStr(RegexMatches.TIME_REGEX, sourceText);
                                     Log.i("getSongsList", "timeStr = " + timeStr);
 
                                     //更新UI————————————————————————————————————————————————————————————

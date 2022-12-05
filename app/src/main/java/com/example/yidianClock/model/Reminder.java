@@ -2,6 +2,7 @@ package com.example.yidianClock.model;
 
 import org.litepal.crud.LitePalSupport;
 
+import java.util.Date;
 import java.util.List;
 
 public class Reminder extends LitePalSupport {
@@ -10,9 +11,9 @@ public class Reminder extends LitePalSupport {
      */
     String title;
     /**
-     * 原始标准化日期
+     * 第一次标准化之后通过计算过去的目标日（会变化），用来排序
      */
-    String priDate;
+    Date goalDate;
     /**
      * 存储标签，如生日、纪念日、倒计时等
      */
@@ -26,12 +27,16 @@ public class Reminder extends LitePalSupport {
      */
     String timeStr;
 
-    public Reminder(String title, String label, String priDate, String type, String timeStr) {
+    public Reminder(String title, String label, Date goalDate, String type, String timeStr) {
         this.title = title;
-        this.priDate = priDate;
+        this.goalDate = goalDate;
         this.label = label;
         this.type = type;
         this.timeStr = timeStr;
+    }
+
+    public Reminder() {
+        this("", "", new Date(), "", "");
     }
 
     //——————————————————————————————————————————————————————————————————————————————————————————————
@@ -57,18 +62,18 @@ public class Reminder extends LitePalSupport {
     public String toString() {
         return "Reminder{" +
                 "title='" + title + '\'' +
-                ", priDate='" + priDate + '\'' +
+                ", goalDate='" + goalDate + '\'' +
                 ", label='" + label + '\'' +
                 ", type='" + type + '\'' +
                 '}';
     }
 
-    public String getPriDate() {
-        return priDate;
+    public Date getGoalDate() {
+        return goalDate;
     }
 
-    public void setPriDate(String priDate) {
-        this.priDate = priDate;
+    public void setGoalDate(Date goalDate) {
+        this.goalDate = goalDate;
     }
 
     public String getLabel() {

@@ -1,5 +1,6 @@
 package com.example.yidianClock.fragment;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,9 @@ import com.example.yidianClock.activity.MainActivity;
 import com.example.yidianClock.adapter.ReminderAdapter;
 import com.example.yidianClock.databinding.FragmentReminderdayBinding;
 import com.example.yidianClock.model.Reminder;
+import com.example.yidianClock.utils.MyUtils;
+
+import org.litepal.LitePal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,14 +37,26 @@ public class ReminderDayFragment extends Fragment {
     }
 
 
+    @SuppressLint("NotifyDataSetChanged")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         frBinding = FragmentReminderdayBinding.inflate(inflater, container, false);
 
+        //reminderList数据，从数据库中取值（全部），必须在这里取值，因为reminderList的引用是这里传过去的
+        if (LitePal.isExist(Reminder.class)) {
+            Log.i("getSongsList", "从数据库中取提醒日数据，执行！");
+            //这里的查询方法是从原列表的末端往前端查（相当于列表顺序颠倒了）
+            //按第一次记录时的目标日正序排列（即靠近今天的目标日放在前边）
+            reminderList = LitePal.order("goalDate asc").find(Reminder.class);
+            //往list的尾部加一个对象，占位，以显示尾部布局
+            reminderList.add(new Reminder());
+        }
+        Log.i("getSongsList", "OnCreateView: reminderList = " + reminderList);
         //创建Adapter
         adapter = new ReminderAdapter(context, reminderList);
+        Log.i("getSongsList", "OnCreateView: adapter = " + adapter);
         //创建布局管理器
         layoutManager = new LinearLayoutManager(context);
         Log.i("getSongsList", "adapter和layoutManager创建");
@@ -50,7 +66,34 @@ public class ReminderDayFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
         //在Fragment中必须在这里设置
         recyclerView.setAdapter(adapter);
-        Log.i("getSongsList", "布局管理器和adapter设置");
+        //初始化提醒日列表UI
+        adapter.notifyDataSetChanged();
+
+        //recyclerView滚动监听
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                //上滑为正，下滑为负
+                if (Math.abs(dy) > 20) {
+                    //隐藏软键盘
+                    MyUtils.getInstance(context).hideSoftInput(frBinding.editRemindInput);
+                    //软键盘还在，故调高尾部布局的高度，避免遮挡
+                    if (frBinding.layoutInput.getVisibility() == View.GONE) {
+                        //不可见不作处理
+                        return;
+                    }
+                    //可见才执行以下逻辑————————————————————————————————————————————————
+                    adapter.setOnListener((holder, layoutParams) -> {
+                        layoutParams.height = 100*3;
+                        holder.itemView.setLayoutParams(layoutParams);
+                        Log.i("getSongsList", "底部布局已调高！");
+                    });
+                    //通知UI更新，这样才会执行实现
+                    adapter.notifyItemChanged(reminderList.size()-1);
+                }
+            }
+        });
 
         return frBinding.getRoot();
     }

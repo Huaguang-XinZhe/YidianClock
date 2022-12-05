@@ -131,6 +131,22 @@ public class MyUtils {
     }
 
     /**
+     * 根据一个指定的标准化时间获取它的Date对象
+     * @param standardTime 标准化时间
+     * @return 如果解析成功就返回对应日期的Date对象，不成功就返回当前日期的Date对象
+     */
+    public static Date getDate(String standardTime) {
+        Date date = new Date();
+        SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CANADA);
+        try {
+            date = sdFormat.parse(standardTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
+    /**
      * 获取标准化日期的int数组
      * @param date 标准化日期，如：2001-11-09
      * @return int数组，0：年份，1：月份，2：日
