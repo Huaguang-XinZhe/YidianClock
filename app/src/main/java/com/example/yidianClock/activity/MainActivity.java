@@ -168,9 +168,9 @@ public class MainActivity extends AppCompatActivity {
                     if (frBinding != null && frBinding.layoutInput.getVisibility() == View.VISIBLE) {
                         //隐藏后来的底部输入框
                         frBinding.layoutInput.setVisibility(View.GONE);
-                        //此时adapter不为null，调回list尾部布局的高度
+                        //此时adapter不为null，重新实现OnListener接口，调回list尾部布局的高度
                         adapter.setOnListener((holder, layoutParams) -> {
-                            layoutParams.height = 50*3;
+                            layoutParams.height = 60*3;
                             holder.itemView.setLayoutParams(layoutParams);
                             Log.i("getSongsList", "底部布局已恢复！");
                         });
