@@ -210,10 +210,10 @@ public class YDAlarm {
     }
 
     /**
-     * 设置一个响铃的闲娱限止闹钟，默认60分钟
+     * 设置一个响铃的闲娱限止闹钟，默认3小时
      */
     public void setLimitAlarm() {
-        updateHAM(60);
+        updateHAM(3);
         sp.edit().putString("limitAlarmTime", getHour() + ":" + getMinutes()).apply();
         setRing(true);
         setAlarm(getHour(), getMinutes(), "闲娱限止！");
@@ -286,7 +286,7 @@ public class YDAlarm {
     }
 
     /**
-     * 根据类型和更新hour和minutes的值
+     * 根据类型更新hour和minutes的值
      * @param timeLength 时间长度，包括午休和晚睡的restTime和震动提示的interval
      */
     public void updateHAM(float timeLength) {

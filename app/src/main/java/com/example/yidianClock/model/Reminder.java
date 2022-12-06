@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 public class Reminder extends LitePalSupport {
+    int id;
     /**
      * 姓名、纪念几周年、高考等
      */
@@ -66,6 +67,14 @@ public class Reminder extends LitePalSupport {
                 ", label='" + label + '\'' +
                 ", type='" + type + '\'' +
                 '}';
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Date getGoalDate() {

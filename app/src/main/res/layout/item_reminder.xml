@@ -2,158 +2,178 @@
 <androidx.appcompat.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
-
-    <View
-        android:id="@+id/view_line"
-        android:layout_width="match_parent"
-        android:layout_height="0.2dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp"
-        android:background="@color/gray_light_dividing_line"/>
+    android:layout_height="wrap_content">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp">
+        android:orientation="vertical">
 
-        <RelativeLayout
-            android:layout_width="85dp"
+        <View
+            android:id="@+id/view_line"
+            android:layout_width="match_parent"
+            android:layout_height="0.2dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
+            android:background="@color/gray_light_dividing_line"/>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:padding="5dp">
+            android:padding="10dp">
 
-            <ImageView
-                android:id="@+id/image_head"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/tian_xie"/>
-
-            <TextView
-                android:id="@+id/tv_label"
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="85dp"
                 android:layout_height="wrap_content"
-                android:text="生日"
-                android:layout_alignParentEnd="true"
-                android:background="@drawable/shape_label"
-                android:textColor="@color/white"
-                android:textSize="11sp"
-                android:layout_marginEnd="5dp" />
+                android:layout_gravity="center_vertical"
+                android:padding="5dp">
 
-        </RelativeLayout>
-
-        <LinearLayout
-            android:id="@+id/layout_birthInfo"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginStart="5dp"
-            android:orientation="vertical"
-            android:gravity="center_vertical">
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/tv_name"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="我自己"
-                    android:textColor="@color/black"
-                    android:textSize="20sp" />
-
-                <TextView
-                    android:id="@+id/tv_age"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="21周岁"
-                    android:layout_marginStart="5dp"
-                    android:background="@drawable/selector_label_age"
-                    android:textColor="@color/green_light"
-                    android:textSize="8sp"
+                <ImageView
+                    android:id="@+id/image_head"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:clickable="true"
                     android:focusable="true"
-                    android:layout_gravity="center_vertical" />
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/layout_sx_xz"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp">
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/tian_xie"/>
 
                 <TextView
-                    android:id="@+id/tv_theConstellation"
+                    android:id="@+id/tv_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="天蝎"/>
+                    android:text="生日"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/shape_label"
+                    android:textColor="@color/white"
+                    android:textSize="11sp"
+                    android:layout_marginEnd="5dp" />
 
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="10dp"
-                    android:layout_gravity="center_vertical"
-                    android:background="@color/gray_light_dividing_line"
-                    android:layout_marginStart="5dp"
-                    android:layout_marginEnd="5dp"/>
+            </RelativeLayout>
 
-                <TextView
-                    android:id="@+id/tv_chineseZodiac"
-                    android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/layout_birthInfo"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:orientation="vertical"
+                android:gravity="center_vertical">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/tv_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="我自己"
+                        android:textColor="@color/black"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/tv_age"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="21周岁"
+                        android:layout_marginStart="5dp"
+                        android:background="@drawable/selector_label_age"
+                        android:textColor="@color/green_light"
+                        android:textSize="8sp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:layout_gravity="center_vertical" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/layout_sx_xz"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="蛇"/>
+                    android:layout_marginTop="5dp">
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                    <TextView
+                        android:id="@+id/tv_theConstellation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="天蝎"/>
 
-        </LinearLayout>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="10dp"
+                        android:layout_gravity="center_vertical"
+                        android:background="@color/gray_light_dividing_line"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"/>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="5dp"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tv_chineseZodiac"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="蛇"/>
 
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/layout_days"
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent"
+                android:layout_marginEnd="5dp"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/layout_days"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/tv_daysNum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="344"
+                        android:textColor="@color/green_set_value"
+                        android:textSize="30sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5dp"
+                        android:text="天"
+                        android:textColor="@color/green_set_value"
+                        android:textSize="15sp" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <TextView
-                    android:id="@+id/tv_daysNum"
+                    android:id="@+id/tv_tip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="344"
-                    android:textColor="@color/green_set_value"
-                    android:textSize="30sp" />
+                    android:text="还有"
+                    android:textSize="9sp"
+                    android:layout_gravity="center_horizontal" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:text="天"
-                    android:textColor="@color/green_set_value"
-                    android:textSize="15sp" />
+            </LinearLayout>
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <TextView
-                android:id="@+id/tv_tip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="还有"
-                android:textSize="9sp"
-                android:layout_gravity="center_horizontal" />
-
-        </LinearLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <FrameLayout
+        android:id="@+id/layout_delete"
+        android:layout_width="120dp"
+        android:layout_height="match_parent"
+        android:background="@color/red">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/delete"
+            android:layout_gravity="center"/>
+
+    </FrameLayout>
 
 </androidx.appcompat.widget.LinearLayoutCompat>

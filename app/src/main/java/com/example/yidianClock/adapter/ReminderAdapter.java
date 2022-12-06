@@ -2,11 +2,9 @@ package com.example.yidianClock.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -62,6 +60,8 @@ public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.onListener = onListener;
     }
 
+
+
     static {
         imageMap.put("天蝎座", R.drawable.tian_xie);
         imageMap.put("天秤座", R.drawable.tian_ping);
@@ -105,7 +105,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (_holder instanceof InnerHolder) {
             //判断，强转
             InnerHolder holder = (InnerHolder) _holder;
-            /*
+        /*
         普通设置
          */
             String label = reminderList.get(position).getLabel();
@@ -200,6 +200,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             itemReminderEmptyBinding = binding;
         }
     }
+
 
     /**
      * 跟随标签更新设置：

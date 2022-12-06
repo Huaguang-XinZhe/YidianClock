@@ -23,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -36,6 +37,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.yidianClock.GlobalLayoutListener;
+import com.example.yidianClock.OnKeyboardChangedListener;
 import com.example.yidianClock.R;
 import com.example.yidianClock.TextBGSpan;
 import com.example.yidianClock.adapter.MyFSAdapter;
@@ -113,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = mainBinding.fab;
         sp = getSharedPreferences("sp", MODE_PRIVATE);
 
-
         //ActionBar左侧设置
         ActionBar actionBar = this.getSupportActionBar();
         if (actionBar != null) {
@@ -125,6 +127,12 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout,
                 R.string.drawer_open, R.string.drawer_close);
         drawerLayout.addDrawerListener(drawerToggle);
+
+        //Toasty配置，使之居中显示
+            Toasty.Config.getInstance()
+                    .allowQueue(false)//禁止排队
+                    .setGravity(Gravity.CENTER_VERTICAL)
+                    .apply();
 
         //创建数据库，并初始化数据。注意！这是耗时操作！！！
         initDBData();
@@ -156,6 +164,23 @@ public class MainActivity extends AppCompatActivity {
 //            }
         }).attach();
 
+        //监听软键盘的状态改变
+        mainBinding.getRoot().getViewTreeObserver().addOnGlobalLayoutListener(
+                new GlobalLayoutListener(mainBinding.getRoot(), (isShow, keyboardHeight, screenWidth, screenHeight) -> {
+                    if (isShow) {
+                        Log.i("getSongsList", "软键盘弹出！");
+                        Log.i("getSongsList", "keyboardHeight = " + keyboardHeight);
+                        //存入延迟（划回主页，底部布局的复现延迟）时间，300毫秒
+                        sp.edit().putLong("delayMillis", 300).apply();
+                    } else {
+                        Log.i("getSongsList", "软键盘隐藏！");
+                        Log.i("getSongsList", "keyboardHeight = " + keyboardHeight);
+                        //几乎不延迟
+                        sp.edit().putLong("delayMillis", 10).apply();
+                    }
+                }));
+
+        //ViewPager2滑动回调
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
@@ -179,12 +204,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                     fab.setImageResource(R.drawable.add);
                 } else {
+                    //延迟一下，让软键盘先下去
+                    long delayMillis = sp.getLong("delayMillis", 200);
+                    //原来底部复现（只有fab没显示才执行）
                     if (fab.getVisibility() == View.GONE) {
-                        //原来底部复现（延迟一下，让软键盘先下去）
+                        Log.i("getSongsList", "delayMillis = " + delayMillis);
                         new Handler().postDelayed(() -> {
                             fab.setVisibility(View.VISIBLE);
                             mainBinding.tabLayoutNav.setVisibility(View.VISIBLE);
-                        }, 300);
+                        }, delayMillis);
                     }
                     fab.setImageResource(R.drawable.alarm);
                 }
@@ -227,6 +255,12 @@ public class MainActivity extends AppCompatActivity {
 //                        }, 150);
 //                        dialog.show();
 
+                        //输入框的点击事件
+                        remindInput.setOnClickListener(v1 -> {
+                            Log.i("getSongsList", "输入框点击执行！");
+                            //显示光标，并移至行首，防止有时点击失去光标
+                            remindInput.setSelection(0);
+                        });
 
                         //撤销图标点击监听
                         frBinding.imageRevoke.setOnClickListener(v1 -> {

@@ -17,8 +17,14 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import com.example.yidianClock.model.Reminder;
+import com.example.yidianClock.time_conversions.Festival;
+import com.example.yidianClock.time_conversions.MatchStandardization;
+import com.example.yidianClock.utils.timeUtils.Age;
 import com.example.yidianClock.utils.timeUtils.MyDate;
 import com.example.yidianClock.utils.timeUtils.TimePoint;
+
+import org.litepal.LitePal;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,6 +49,84 @@ public class MyUtils {
             myUtils = new MyUtils(context);
         }
         return myUtils;
+    }
+
+    /**
+     * 根据目标日找到数据库中同一行数据里面的timeStr，根据原始时间文本重新计算目标日，并更新到数据库中
+     * @param goalDate 获取到的离现在最近的目标日
+     */
+    public static void updateGoalDate(Date goalDate) {
+        //找到goalDate列值为传入值的所有行（不出意外的话只有一行）组成的列表（一行映射过来也就是一个Reminder对象）
+        List<Reminder> reminderList = LitePal.select("timeStr")//只查找timeStr列
+                .where("goalDate = ?", goalDate.getTime() + "")//找到值等于goalDate的那一行
+                .find(Reminder.class);
+        //找到对应的timeStr，原始时间文本
+        String timeStr = reminderList.get(0).getTimeStr();
+        //获取对应行的id，以备更新之用
+        int id = reminderList.get(0).getId();
+        Log.i("getSongsList", "id = " + id);
+        //根据timeStr获取priDate（刚标准化的时间）和type（原始时间文本的具体类型）组成的字符串数组，以备下面计算之用
+        String[] dpArr = MatchStandardization.conversions(timeStr);
+        //重新计算目标日（此时的今天是最近目标日到期日的下一天）
+        String goalDay = MatchStandardization.getGoalDay(timeStr, dpArr[0], dpArr[1]);
+        ContentValues values = new ContentValues();
+        values.put("goalDate", getDate(goalDay).getTime());
+        //更新数据库中的数据
+        LitePal.update(Reminder.class, values, id);
+
+    }
+
+    /**
+     * 获取数据库中离今天最近的目标日
+     * @return Date类型
+     */
+    public static Date getTheLatestGoalDate() {
+        long timeMillis = LitePal.min(Reminder.class, "goalDate", Long.class);
+        Log.i("getSongsList", "timeMillis = " + timeMillis);
+        return new Date(timeMillis);
+    }
+
+//    /**
+//     * 判断今天是否在最近目标日之后
+//      * @param goalDate 目标日（为离今天最近的目标日而设置）
+//     */
+//    public static boolean isAfter(Date goalDate) {
+//        return new Date().after(goalDate);
+
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTime(goalDate);
+//        //目标日的天（在月份中的几号）
+//        int day = calendar.get(Calendar.DAY_OF_MONTH);
+//        System.out.println("day = " + day);
+//        //使天数 + 1，设置到Calendar对象中，更新时间
+//        // TODO: 2022/12/6 这里加一天不知道会不会有Bug
+//        calendar.set(Calendar.DAY_OF_MONTH, day + 1);
+//        System.out.println(getDate(calendar));
+//        System.out.println(getCurrentDate());
+//        return getDate(calendar).equals(getCurrentDate());
+
+//        //注意，date对象的考量不仅仅是年月日，还有时分秒、时区等，故比较日期不能直接使用Date对象的equals方法
+//        //Tue Dec 06 00:00:00 CST 2022
+//        System.out.println(calendar.getTime());
+//        //Tue Dec 06 10:31:38 CST 2022
+//        System.out.println(new Date());
+//    }
+
+//    public static void main(String[] args) {
+//        Date goalDate = getDate("2022-1-05");
+//        System.out.println(isGoalDateAdd_1(goalDate));
+//    }
+
+    /**
+     * 从Calendar对象中获取标准化日期
+     * @param calendar Calendar对象
+     */
+    public static String getDate(Calendar calendar) {
+        int year = calendar.get(Calendar.YEAR);
+        //获取的month要少1（1月也一样），故+1
+        int month = calendar.get(Calendar.MONTH) + 1;
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        return year + "-" + Festival.addZero(month) + "-" + Festival.addZero(day);
     }
 
     /**
