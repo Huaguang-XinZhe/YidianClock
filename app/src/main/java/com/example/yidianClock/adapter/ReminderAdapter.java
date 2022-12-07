@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    Context context;
-    List<Reminder> reminderList;
+    public Context context;
+    public List<Reminder> reminderList;
     /**
      * 正常显示的item类型
      */
@@ -114,6 +114,14 @@ public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         /*
         根据数据映射、计算、判断
          */
+            //使用ViewHolder获取最新位置，并根据位置占位隐藏/显示分割线
+            if (holder.getAbsoluteAdapterPosition() == 0) {
+                //分割线不可见但占位
+                holder.itemReminderBinding.viewLine.setVisibility(View.INVISIBLE);
+            } else {
+                //分割线可见
+                holder.itemReminderBinding.viewLine.setVisibility(View.VISIBLE);
+            }
             //每次都通过timeStr再计算一次priDate
             // TODO: 2022/12/5 减少重复计算
             String timeStr = reminderList.get(position).getTimeStr();

@@ -77,7 +77,7 @@ public class ReminderDayFragment extends Fragment {
 
         RecyclerView recyclerView = frBinding.recyclerViewReminderDay;
         //通过回调实现创建ItemHelper对象
-        ItemTouchHelper helper = new ItemTouchHelper(new SimpleItemTouchHelperCallback(adapter, reminderList));
+        ItemTouchHelper helper = new ItemTouchHelper(new SimpleItemTouchHelperCallback(adapter));
         //绑定RecyclerView
         helper.attachToRecyclerView(recyclerView);
         //必须先设置布局管理器，要不然不会显示

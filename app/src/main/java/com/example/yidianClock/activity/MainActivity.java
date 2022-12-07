@@ -258,8 +258,11 @@ public class MainActivity extends AppCompatActivity {
                         //输入框的点击事件
                         remindInput.setOnClickListener(v1 -> {
                             Log.i("getSongsList", "输入框点击执行！");
-                            //显示光标，并移至行首，防止有时点击失去光标
-                            remindInput.setSelection(0);
+                            //必须为空才能执行，要不然每次点击都会回到行首，便无法定点编辑
+                            if (sourceText.isEmpty()) {
+                                //显示光标，并移至行首，防止有时点击失去光标
+                                remindInput.setSelection(0);
+                            }
                         });
 
                         //撤销图标点击监听
@@ -351,6 +354,8 @@ public class MainActivity extends AppCompatActivity {
                             Log.i("getSongsList", "reminderList = " + reminderList);
                             //新增刷新（放在第一位），这个方法默认会从list的position位取数据，放在position位
                             adapter.notifyItemInserted(0);
+                            //改变刷新第二项（因为第二项之前是第一项，而第一项上面的分割线占位隐藏了，但现在它是第二项，第二项的分割线必须显示）
+                            adapter.notifyItemChanged(1);
                             layoutManager.scrollToPosition(0);
                             //必须是目标日
                             String tip = label + "提醒设置成功！\n目标日：" + goalDay;

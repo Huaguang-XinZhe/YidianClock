@@ -9,13 +9,18 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.Process;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+
+import androidx.annotation.RequiresApi;
 
 import com.example.yidianClock.model.Reminder;
 import com.example.yidianClock.time_conversions.Festival;
@@ -49,6 +54,28 @@ public class MyUtils {
             myUtils = new MyUtils(context);
         }
         return myUtils;
+    }
+
+    /**
+     * 按指定时间震动
+     * @param milliseconds 指定时间
+     */
+    public void vibrate(long milliseconds) {
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+//        long[] pattern = {1500L, 1500L};//静、震
+//        if (vibrator.hasVibrator()) {
+//            Log.i("getSongsList", "有震动器，开始震动！");
+//            vibrator.vibrate(1000);
+//        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.EFFECT_TICK),
+                    new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .setUsage(AudioAttributes.USAGE_ALARM)
+                            .build());
+        } else {
+            vibrator.vibrate(milliseconds);
+        }
     }
 
     /**
