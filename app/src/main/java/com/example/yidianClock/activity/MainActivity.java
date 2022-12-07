@@ -136,7 +136,13 @@ public class MainActivity extends AppCompatActivity {
 
         //创建数据库，并初始化数据。注意！这是耗时操作！！！
         initDBData();
+        //设置提醒——————————————————————————————————————————————————————————————————————————
+        //设置午休、晚睡闹钟（含震光提示）
         alarm.setFinally();
+        // TODO: 2022/12/7 将这里计算得到的最近目标日传给fragment引用
+        //获取数据库中离现在最近的目标日
+        Date latestGoalDate = MyUtils.getTheLatestGoalDate();
+        setReminder(latestGoalDate);
 
         //数据初始化
         //fragment数据
@@ -601,6 +607,56 @@ public class MainActivity extends AppCompatActivity {
             new SleepAlarm().save();
             sp.edit().putBoolean("myDBInit_JustDoOnce", false).apply();
         }
+    }
+
+    /**
+     * 判断数据库中的目标日是否到期（当天或提前指定天数），如果到期就设置闹钟提醒，默认9：00
+     * @param latestGoalDate 离现在最近的目标日
+     */
+    private void setReminder(Date latestGoalDate) {
+        String s1;
+        int dueDays = MyUtils.dueAFewDaysEarly(latestGoalDate);
+        //提前一天、当天才会执行
+        //构建提醒字符串的第一部分
+        if (dueDays == 1) {
+            if (!sp.getBoolean("aDayInAdvance", false)) {
+                s1 = "明天是";
+                _setReminder(latestGoalDate, s1);
+                //设置完后更新sp
+                sp.edit().putBoolean("aDayInAdvance", true).apply();
+            }
+        } else if (dueDays == 0) {
+            if (!sp.getBoolean("dueOnTheSameDay", false)) {
+                s1 = "今天是";
+                _setReminder(latestGoalDate, s1);
+                //设置完后更新sp
+                sp.edit().putBoolean("dueOnTheSameDay", true).apply();
+            }
+        }
+
+    }
+
+    /**
+     * 以上函数的附属函数，为了实现复用和一天只执行一次
+     */
+    private void _setReminder(Date latestGoalDate, String s1) {
+        String s2 = "";
+        //通过目标日到数据库中获取该行其他列的数据
+        List<Reminder> reminderList = LitePal.select("label", "title")//只查找label和title列
+                .where("goalDate = ?", latestGoalDate.getTime() + "")//找到值等于goalDate的那一行
+                .find(Reminder.class);
+        //不出意外reminderList里面只有一个元素
+        String label = reminderList.get(0).getLabel();
+        if (label.equals("生日")) {
+            s2 = "的生日";
+        } else if (label.equals("纪念日")) {
+            s2 = label;
+        }
+        String title = reminderList.get(0).getTitle();
+        String content = s1 + title + s2;
+        // TODO: 2022/12/7 这里目前是默认9：00提醒，之后要根据当天的起床时间来设定提醒时间
+        alarm.set("9:00", content);
+        Toasty.success(this, "提醒设置成功", Toasty.LENGTH_SHORT).show();
     }
 
 }

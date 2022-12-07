@@ -42,7 +42,6 @@ public class ReminderDayFragment extends Fragment {
         this.context = context;
     }
 
-
     @SuppressLint("NotifyDataSetChanged")
     @Nullable
     @Override

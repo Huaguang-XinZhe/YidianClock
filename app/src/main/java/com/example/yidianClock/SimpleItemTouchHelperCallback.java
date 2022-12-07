@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.yidianClock.adapter.ReminderAdapter;
 import com.example.yidianClock.model.Reminder;
 import com.example.yidianClock.utils.MyUtils;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.litepal.LitePal;
 
@@ -22,6 +23,10 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
     Context context;
     ReminderAdapter adapter;
     List<Reminder> reminderList;
+    /**
+     * 是否点击了撤销按钮
+     */
+    boolean isRevoke = false;
 
     public SimpleItemTouchHelperCallback(ReminderAdapter adapter) {
         //由于adapter实例里本身就有context和reminderList引用，而且这个引用也是MainActivity提供的，所以这里就不重复要求外界传入引用了
@@ -44,28 +49,35 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     @Override
     public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-        //该方法滑动完成后才会调用
-        /*
-        在这里要实现：
-            1. 将滑动item处的数据从list中删除
-            2. 通知adapter移除滑动item
-        这需要position，需要list，需要adapter，而这里可以获取position和adapter，但不能获取list；
-        故可创建一个接口，交由Adapter类（能提供list）去实现；
-        创建接口的目的就是为了减少某处的引用，将实现交由引用提供者来完成（它们能轻松提供所需引用）；
-        如果这里不创建接口，那么就必须增加构造函数的参数，交由构造处去实现。这就要求构造实例的地方能提供相关引用。
-        另外，交给谁去引用，还得看实现的长度。如果长度过长，那就要考虑实现者的负担了，不能让实现者的代码过长。
-         */
-
+        //该方法只有item真正移除后才会调用，item复原会去不会执行
+        Log.i("getSongsList", "onSwiped执行！");
         //获取滑动处的position
         int position = viewHolder.getAbsoluteAdapterPosition();
+        //获取滑动处的Reminder实例
+        Reminder deletedReminder = reminderList.get(position);
         //必须在获取完id后才能在list中把该项移除
-        int id = reminderList.get(position).getId();
+        int id = deletedReminder.getId();
         //从list中移除数据
         reminderList.remove(position);
         //通知adapter，item移除
         adapter.notifyItemRemoved(position);
-        //从数据库中移除该条数据
-        LitePal.delete(Reminder.class, id);
+        if (position == 0) {
+            //如果删除的是第一项，就通知第二项改变刷新
+            //注意，因为OnSwipe方法是移除后调用，此时的第二项的索引已经实时更新为第一项了，所以position = 0
+            adapter.notifyItemChanged(0);
+        }
+        Snackbar.make(viewHolder.itemView, "是否撤销删除操作？", Snackbar.LENGTH_SHORT).setAction("撤销", v -> {
+            isRevoke = true;
+            //在原来删除的位置恢复Reminder实例
+            reminderList.add(position, deletedReminder);
+            //通知插入刷新
+            adapter.notifyItemInserted(position);
+        }).show();
+        //没撤销就彻底删除
+        if (!isRevoke) {
+            //从数据库中移除该条数据
+            LitePal.delete(Reminder.class, id);
+        }
     }
 
     @Override
@@ -79,8 +91,6 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
             int deleteLayoutWidth = 180*3;
 //            //RecyclerView滑动删除的最小删除宽度
 //            int minDeleteWidth = recyclerView.getWidth()/2;
-//            //滑动item的position
-//            int position = viewHolder.getAbsoluteAdapterPosition();
             //限制整体布局左移的宽度
             if (-dX < deleteLayoutWidth) {
                 //跟随dX，整体布局左移（显示删除布局）
@@ -122,7 +132,15 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
         viewHolder.itemView.setScrollX(0);
         if (viewHolder instanceof ReminderAdapter.InnerHolder) {
             ReminderAdapter.InnerHolder holder = (ReminderAdapter.InnerHolder) viewHolder;
-            //分割线再现
+            //滑动item的position
+            int position = viewHolder.getAbsoluteAdapterPosition();
+            //分割线再现，不过第一项就算了
+            if (position == 0) {
+                Log.i("getSongsList", "clearView，position = 0执行");
+                //这里不管怎么搞都没有，还是直接刷新吧！
+                adapter.notifyItemChanged(0);
+                return;
+            }
             holder.itemReminderBinding.viewLine.setVisibility(View.VISIBLE);
         }
     }

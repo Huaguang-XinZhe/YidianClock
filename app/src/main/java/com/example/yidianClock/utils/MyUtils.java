@@ -22,6 +22,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.model.Reminder;
 import com.example.yidianClock.time_conversions.Festival;
 import com.example.yidianClock.time_conversions.MatchStandardization;
@@ -113,31 +114,42 @@ public class MyUtils {
         return new Date(timeMillis);
     }
 
-//    /**
-//     * 判断今天是否在最近目标日之后
-//      * @param goalDate 目标日（为离今天最近的目标日而设置）
-//     */
-//    public static boolean isAfter(Date goalDate) {
-//        return new Date().after(goalDate);
-
-//        Calendar calendar = Calendar.getInstance();
-//        calendar.setTime(goalDate);
-//        //目标日的天（在月份中的几号）
-//        int day = calendar.get(Calendar.DAY_OF_MONTH);
-//        System.out.println("day = " + day);
-//        //使天数 + 1，设置到Calendar对象中，更新时间
-//        // TODO: 2022/12/6 这里加一天不知道会不会有Bug
-//        calendar.set(Calendar.DAY_OF_MONTH, day + 1);
-//        System.out.println(getDate(calendar));
-//        System.out.println(getCurrentDate());
-//        return getDate(calendar).equals(getCurrentDate());
+    /**
+     * 判断目标日提前几天到期
+     * @param goalDate 目标日（为离今天最近的目标日而设置）
+     * @return 0：目标日刚好到期，1：目标日提前一天到期，-1：未到期
+     */
+    // TODO: 2022/12/7 提前天数允许自定义，默认当天和提前一天提醒
+    public static int dueAFewDaysEarly(Date goalDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(goalDate);
+        //当前日期的标准化表示
+        String currentDate = getCurrentDate();
+        if (getDate(calendar).equals(currentDate)) {
+            //如果目标日正好是今天，那正好到期，此时提前的天数为0
+            return 0;
+        }
+        //目标日在当天之前
+        if (goalDate.before(new Date())) {
+            //目标日的天（在月份中的几号）
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+            //使天数减去指定要提前的天数，这里默认是1，设置到Calendar对象中，更新时间
+            // TODO: 2022/12/6 这里加一天不知道会不会有Bug
+            calendar.set(Calendar.DAY_OF_MONTH, day - 1);
+            //目标日的前一天正好是今天
+            if (getDate(calendar).equals(currentDate)) {
+                return 1;
+            }
+        }
+        //如果前两个条件都不满足，那么默认返回-1
+        return -1;
 
 //        //注意，date对象的考量不仅仅是年月日，还有时分秒、时区等，故比较日期不能直接使用Date对象的equals方法
 //        //Tue Dec 06 00:00:00 CST 2022
 //        System.out.println(calendar.getTime());
 //        //Tue Dec 06 10:31:38 CST 2022
 //        System.out.println(new Date());
-//    }
+    }
 
 //    public static void main(String[] args) {
 //        Date goalDate = getDate("2022-1-05");
@@ -271,6 +283,10 @@ public class MyUtils {
         return arr;
     }
 
+    /**
+     * 获取现在的时间
+     * @return 标准格式，如：01:14
+     */
     public static String getCurrentTime() {
         SimpleDateFormat format = new SimpleDateFormat("HH:mm", Locale.CHINESE);
         return format.format(new Date());

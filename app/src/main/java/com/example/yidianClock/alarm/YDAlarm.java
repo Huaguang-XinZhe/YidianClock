@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import es.dmoral.toasty.Toasty;
+
 public class YDAlarm {
     private final Context context;
 
@@ -180,7 +182,7 @@ public class YDAlarm {
             Log.i("TestTag", getHour() + ":" + getMinutes());
             sp.edit().putString("targetAlarmTime", getHour() + ":" + getMinutes()).apply();
         } else {
-            Toast.makeText(context, "现在不在您设置的一般休息时段内，故不设置闹钟", Toast.LENGTH_LONG).show();
+            Toasty.info(context, "现在不在您设置的一般休息时段内，故不设置闹钟", Toasty.LENGTH_SHORT).show();
         }
     }
 
