@@ -25,7 +25,7 @@ public class UnlockReceiver extends BroadcastReceiver {
                 .compareTo(new TimePoint(limitAlarmTime)) <= 0;
         if (!isMoreAndCloseTo && sp.getBoolean("isTargetAlarmSet", false) && !isBeforeLimit) {
             //打开闹钟列表
-            new YDAlarm(context).showAlarm();
+            YDAlarm.showAlarm(context);
             Toast.makeText(context, "请手动删除所有睡前闹钟", Toast.LENGTH_LONG).show();
         }
         //一解锁就应该设为false，不管是中途醒来，还是后来的关闭闹钟

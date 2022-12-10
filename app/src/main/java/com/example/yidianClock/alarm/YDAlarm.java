@@ -282,7 +282,7 @@ public class YDAlarm {
     /**
      * 打开闹钟列表
      */
-    public void showAlarm() {
+    public static void showAlarm(Context context) {
         Intent intent = new Intent(AlarmClock.ACTION_SHOW_ALARMS);
         context.startActivity(intent);
     }

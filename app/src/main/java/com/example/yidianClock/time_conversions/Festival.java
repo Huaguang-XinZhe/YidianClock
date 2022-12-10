@@ -211,7 +211,6 @@ public class Festival {
         }
         //获取公历中的月
         int month = TERM_MONTH[termIndex];
-        Log.i("getSongsList", "solarTerm2dateStr: yearStr = " + yearStr);
         return yearStr + "-" + addZero(month) + "-" + addZero(day);
     }
 

@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.example.yidianClock.activity.MainActivity;
+import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {
@@ -27,10 +29,23 @@ public class HomeFragment extends Fragment {
 
         fhBinding = FragmentHomeBinding.inflate(inflater, container, false);
 //        return inflater.inflate(R.layout.fragment_home, container, false);
-        fhBinding.imageHelp.setOnClickListener(v -> {
-            Toast.makeText(context, "你点击了帮助图片", Toast.LENGTH_SHORT).show();
+        //主页图片点击监听
+        fhBinding.imageAlarmList.setOnClickListener(v -> {
+            //跳转到系统闹钟列表
+            YDAlarm.showAlarm(context);
         });
 
         return fhBinding.getRoot();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        //获取MainActivity的引用
+        MainActivity activity = (MainActivity) getActivity();
+        if (activity != null) {
+            //为activity传入相关引用
+            activity.fhBinding = fhBinding;
+        }
     }
 }

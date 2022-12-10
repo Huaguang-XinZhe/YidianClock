@@ -8,5 +8,6 @@
         <mapping class="com.example.yidianClock.model.LunchAlarm" />
         <mapping class="com.example.yidianClock.model.SleepAlarm" />
         <mapping class="com.example.yidianClock.model.Reminder"/>
+        <mapping class="com.example.yidianClock.model.SolarFestival"/>
     </list>
 </litepal>

@@ -45,6 +45,7 @@ import com.example.yidianClock.adapter.MyFSAdapter;
 import com.example.yidianClock.adapter.ReminderAdapter;
 import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.databinding.ActivityMainBinding;
+import com.example.yidianClock.databinding.FragmentHomeBinding;
 import com.example.yidianClock.databinding.FragmentReminderdayBinding;
 import com.example.yidianClock.fragment.HomeFragment;
 import com.example.yidianClock.fragment.ReminderDayFragment;
@@ -65,6 +66,7 @@ import org.litepal.LitePal;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -88,6 +90,8 @@ public class MainActivity extends AppCompatActivity {
     public ReminderAdapter adapter;
     //引用ReminderDayFragment的layoutManager
     public RecyclerView.LayoutManager layoutManager;
+    //引用HomeFragment的Binding
+    public FragmentHomeBinding fhBinding;
     String sourceText;
     String timeStr;
     //String对象在类中如果一开始不初始化，那么他的初始值将默认为null
@@ -105,6 +109,10 @@ public class MainActivity extends AppCompatActivity {
      * 时间输入是否来自输入框
      */
     boolean isFromInput = true;
+    /**
+     * 提醒日到期闹铃提示文本，没到期为空字符串
+     */
+    String content;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +150,8 @@ public class MainActivity extends AppCompatActivity {
         // TODO: 2022/12/7 将这里计算得到的最近目标日传给fragment引用
         //获取数据库中离现在最近的目标日
         Date latestGoalDate = MyUtils.getTheLatestGoalDate();
-        setReminder(latestGoalDate);
+        content = setReminder(latestGoalDate);
+        Log.i("getSongsList", "content = " + content);
 
         //数据初始化
         //fragment数据
@@ -210,17 +219,20 @@ public class MainActivity extends AppCompatActivity {
                     }
                     fab.setImageResource(R.drawable.add);
                 } else {
+                    //以下代码启动后就会执行，但此时OnCreate和主页Fragment已经加载好了
                     //延迟一下，让软键盘先下去
                     long delayMillis = sp.getLong("delayMillis", 200);
                     //原来底部复现（只有fab没显示才执行）
                     if (fab.getVisibility() == View.GONE) {
-                        Log.i("getSongsList", "delayMillis = " + delayMillis);
                         new Handler().postDelayed(() -> {
                             fab.setVisibility(View.VISIBLE);
                             mainBinding.tabLayoutNav.setVisibility(View.VISIBLE);
                         }, delayMillis);
                     }
                     fab.setImageResource(R.drawable.alarm);
+                    //注意，这行代码不能放在OnCreate中，fhBinding为null
+                    //设置主页的今日提示（数据库操作，耗时）
+                    setHomeTipToday();
                 }
 
                 //fab短按监听
@@ -228,6 +240,8 @@ public class MainActivity extends AppCompatActivity {
                     if (position == 0) {
                         //主页点击
                         alarm.setFinally();
+
+
                     } else {
                         //提醒日点击
                         //在此对EditText初次实例化
@@ -612,51 +626,91 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 判断数据库中的目标日是否到期（当天或提前指定天数），如果到期就设置闹钟提醒，默认9：00
      * @param latestGoalDate 离现在最近的目标日
+     * @return 闹铃提示文本；返回空串表示目标日当天或其前一天都没到期
      */
-    private void setReminder(Date latestGoalDate) {
-        String s1;
+    private String setReminder(Date latestGoalDate) {
+        Log.i("getSongsList", "setReminder执行");
+        String content = "";
+        String s1 = "";
+        String s2 = "";
         int dueDays = MyUtils.dueAFewDaysEarly(latestGoalDate);
         //提前一天、当天才会执行
         //构建提醒字符串的第一部分
         if (dueDays == 1) {
-            if (!sp.getBoolean("aDayInAdvance", false)) {
-                s1 = "明天是";
-                _setReminder(latestGoalDate, s1);
-                //设置完后更新sp
-                sp.edit().putBoolean("aDayInAdvance", true).apply();
-            }
+            s1 = "明天是：";
         } else if (dueDays == 0) {
-            if (!sp.getBoolean("dueOnTheSameDay", false)) {
-                s1 = "今天是";
-                _setReminder(latestGoalDate, s1);
-                //设置完后更新sp
-                sp.edit().putBoolean("dueOnTheSameDay", true).apply();
+            s1 = "今天是：";
+        }
+        Calendar calendar = Calendar.getInstance();
+        //今天是在今年的第几天
+        int today = calendar.get(Calendar.DAY_OF_YEAR);
+        Log.i("getSongsList", "today = " + today);
+        //是新的一天就执行（默认值为-1，保证第一次一定能够执行）
+        if (today != sp.getInt("today", -1)) {
+            //第一次允许执行
+            //以下代码，一天只能执行一次
+
+            if (!LitePal.isExist(Reminder.class)) {
+                //在没有添加提醒事项之前，直接退出
+                return content;
             }
+            //数据库中存在数据时才需要执行以下逻辑
+            //通过目标日到数据库中获取该行其他列的数据
+            List<Reminder> reminderList = LitePal.select("label", "title")//只查找label和title列
+                    .where("goalDate = ?", latestGoalDate.getTime() + "")//找到值等于goalDate的那一行
+                    .find(Reminder.class);
+            //不出意外reminderList里面只有一个元素
+            String label = reminderList.get(0).getLabel();
+            if (label.equals("生日")) {
+                s2 = "的生日";
+            } else if (label.equals("纪念日")) {
+                s2 = label;
+            }
+            String title = reminderList.get(0).getTitle();
+            content = s1 + title + s2;
+            // TODO: 2022/12/7 这里目前是默认9：00提醒，之后要根据当天的起床时间来设定提醒时间
+            alarm.set("9:00", content);
+            Toasty.success(this, "提醒设置成功", Toasty.LENGTH_SHORT).show();
+
+            sp.edit().putInt("today", today).apply();
         }
 
+        return content;
     }
 
     /**
-     * 以上函数的附属函数，为了实现复用和一天只执行一次
+     * 设置主页的今日提示
      */
-    private void _setReminder(Date latestGoalDate, String s1) {
-        String s2 = "";
-        //通过目标日到数据库中获取该行其他列的数据
-        List<Reminder> reminderList = LitePal.select("label", "title")//只查找label和title列
-                .where("goalDate = ?", latestGoalDate.getTime() + "")//找到值等于goalDate的那一行
-                .find(Reminder.class);
-        //不出意外reminderList里面只有一个元素
-        String label = reminderList.get(0).getLabel();
-        if (label.equals("生日")) {
-            s2 = "的生日";
-        } else if (label.equals("纪念日")) {
-            s2 = label;
+    private void setHomeTipToday() {
+        String text = "";
+        if (content.isEmpty()) {
+            Log.i("getSongsList", "content.isEmpty执行！");
+            Calendar calendar = Calendar.getInstance();
+            //今天是在今年的第几天
+            int today2 = calendar.get(Calendar.DAY_OF_YEAR);
+            //是新的一天就执行（默认值为-1，保证第一次一定能够执行）
+            if (today2 != sp.getInt("today2", -1)) {
+                //第一次允许执行
+                //以下代码，一天只能执行一次
+
+                //获取今天的节日、节气名（第一次执行要进行数据库操作，注意耗时和执行位置）
+                String name = MyUtils.getFestivalOrTermName(this);
+                Log.i("getSongsList", "name = " + name);
+                if (name.isEmpty()) {
+                    return;
+                }
+                text = "今天是：" + name;
+                //有text才让它显现
+                fhBinding.cardHome.setVisibility(View.VISIBLE);
+
+                sp.edit().putInt("today2", today2).apply();
+            }
+
+        } else {
+            text = content;
+            fhBinding.cardHome.setVisibility(View.VISIBLE);
         }
-        String title = reminderList.get(0).getTitle();
-        String content = s1 + title + s2;
-        // TODO: 2022/12/7 这里目前是默认9：00提醒，之后要根据当天的起床时间来设定提醒时间
-        alarm.set("9:00", content);
-        Toasty.success(this, "提醒设置成功", Toasty.LENGTH_SHORT).show();
+        fhBinding.tipHome.setText(text);
     }
 
 }

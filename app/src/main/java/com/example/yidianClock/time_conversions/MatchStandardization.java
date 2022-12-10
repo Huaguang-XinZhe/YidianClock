@@ -343,7 +343,7 @@ public class MatchStandardization {
      * @param deepMatchedStr 对原始时间字符串进行深入匹配得到到该种类型的时间字符串，如上示例
      * @return 标准日期，如：2001-11-09
      */
-    private static String conversions_festival(String year, String deepMatchedStr) {
+    public static String conversions_festival(String year, String deepMatchedStr) {
         String date;
         //不为空串
 //        String year = conversionsYear(deepMatchedStr);

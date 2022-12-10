@@ -2,6 +2,7 @@ package com.example.yidianClock.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -102,7 +103,9 @@ public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder _holder, int position) {
+        Log.i("getSongsList", "onBindViewHolder执行！");
         if (_holder instanceof InnerHolder) {
+            Log.i("getSongsList", "InnerHolder部分执行！");
             //判断，强转
             InnerHolder holder = (InnerHolder) _holder;
         /*
@@ -116,6 +119,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
          */
             //使用ViewHolder获取最新位置，并根据位置占位隐藏/显示分割线
             if (holder.getAbsoluteAdapterPosition() == 0) {
+                Log.i("getSongsList", "OnBindViewHolder: position = 0执行");
                 //分割线不可见但占位
                 holder.itemReminderBinding.viewLine.setVisibility(View.INVISIBLE);
             } else {
@@ -160,6 +164,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
             holder.itemReminderBinding.tvTip.setText(tip);
         } else {
+            Log.i("getSongsList", "EmptyHolder部分执行！");
             EmptyHolder holder = (EmptyHolder) _holder;
             ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
             if (onListener != null) {
@@ -178,7 +183,10 @@ public class ReminderAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public int getItemViewType(int position) {
         //注意，这里的position的范围和list一样，不会再其外围，所以，要想显示尾部布局，就必须往list的尾部添加一个对象占位
-        if (position == reminderList.size() - 1) {
+        //让空的占位item在list的最后一位，可以！但要考虑，当list中只有一个元素的时候，最后一个不就是第一个吗？
+        //所以，思考不得不全面，不能只考虑多的时候，少的时候，什么没有的时候也要考虑！！！
+        int listSize = reminderList.size();
+        if (listSize != 1 && position == listSize - 1) {
             return EMPTY_ITEM;
         } else {
             return NORMAL_ITEM;

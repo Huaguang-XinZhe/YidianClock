@@ -21,4 +21,6 @@
     <color name="blue">#3742fa</color>
     <color name="gray_light_bg_input">#f1f2f6</color>
     <color name="brown">#644d31</color>
+    <color name="gray_code_bg">#f8f9fa</color>
+    <color name="black_light">#3b3a39</color>
 </resources>

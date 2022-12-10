@@ -4,10 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.Ringtone;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -24,6 +26,7 @@ import androidx.annotation.RequiresApi;
 
 import com.example.yidianClock.alarm.YDAlarm;
 import com.example.yidianClock.model.Reminder;
+import com.example.yidianClock.model.SolarFestival;
 import com.example.yidianClock.time_conversions.Festival;
 import com.example.yidianClock.time_conversions.MatchStandardization;
 import com.example.yidianClock.utils.timeUtils.Age;
@@ -44,6 +47,7 @@ public class MyUtils {
     private static MyUtils myUtils;
     Context context;
     InputMethodManager manager;
+    static int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
     private MyUtils(Context context) {
         this.context = context;
@@ -55,6 +59,77 @@ public class MyUtils {
             myUtils = new MyUtils(context);
         }
         return myUtils;
+    }
+
+    /**
+     * 获取当天的节日、节气名
+     * @return 如果今天不是节日、节气，就返回空字符串
+     */
+    public static String getFestivalOrTermName(Context context) {
+        //计算节日、节气的日期，一年执行一次
+        calDate(context);
+        //从数据库中查询数据
+        List<SolarFestival> list = LitePal.findAll(SolarFestival.class);
+        //获取今天日期的标准化表示
+        String currentDate = getCurrentDate();
+        //遍历得到的SolarFestival列表
+        for (SolarFestival festival : list) {
+            Date sfDate = festival.getDate();
+            //节日、节气还没过
+            if (sfDate.after(new Date())) {
+                //转换成标准化日期进行比较，相等就代表节日、节气是在今天
+                if (getStandardTime(sfDate).equals(currentDate)) {
+                    return festival.getName();
+                }
+            }
+        }
+        //如果今天不是节日、节气，就默认返回空字符串
+        return "";
+    }
+
+    /**
+     * 计算节日节气在今年的具体日期，并储存或更新到数据库（一年只执行一次）
+     */
+    public static void calDate(Context context) {
+        //在录节日节气名称数组
+        final String[] solar_festivalArr = new String[] {
+                "春节", "除夕", "鬼节", "母亲节", "父亲节", "劳动节",
+                "儿童节", "情人节", "高考", "元旦", "元宵", "端午", "中秋", "重阳", "国庆", "七夕", "圣诞",
+                "立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至", "小暑",
+                "大暑", "立秋", "处暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪", "冬至", "小寒", "大寒"
+        };
+        //以下代码能实现一年执行一次
+        SharedPreferences sp = context.getSharedPreferences("sp", Context.MODE_PRIVATE);
+        //新的一年，重新计算每个节日、节气在今年的具体日期
+        if (currentYear != sp.getInt("lastYear", 2021)) {
+            //第一次一定执行，因为2021已经过了
+            Log.i("getSongsList", "一年执行一次，执行！");
+            boolean isTableExist = LitePal.isExist(SolarFestival.class);
+            ContentValues values = new ContentValues();
+
+            //循环遍历，逐个计算这些节日节气在今年的具体日期，并存储到数据库中
+            for (String name : solar_festivalArr) {
+                //得到计算后的标准化时间
+                String standardTime = MatchStandardization.conversions_festival(currentYear + "", name);
+                Date date = getDate(standardTime);
+                SolarFestival solarFestival = new SolarFestival(name, date);
+
+                if (!isTableExist) {
+                    //如果该表不存在，就保存创建
+                    //转化成Date型存储到数据库
+                    solarFestival.save();
+                } else {
+                    //如果已经存在，那么就更新Date数据
+                    values.put("date", date.getTime());
+                    LitePal.update(SolarFestival.class, values, solarFestival.getId());
+                }
+
+            }
+
+            //计算完成并存储后，将上一年设为今年（更新）
+            sp.edit().putInt("lastYear", currentYear).apply();
+        }
+
     }
 
     /**
@@ -281,6 +356,14 @@ public class MyUtils {
         arr[1] = Integer.parseInt(dateArr[1]);
         arr[2] = Integer.parseInt(dateArr[2]);
         return arr;
+    }
+
+    /**
+     * 将Date对象转换为标准化日期
+     */
+    public static String getStandardTime(Date date) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINESE);
+        return format.format(date);
     }
 
     /**
