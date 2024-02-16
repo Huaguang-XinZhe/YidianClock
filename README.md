@@ -27,13 +27,13 @@
     alt="#"
     style="width: 200px"
   />
+</div>
+<div style="display: flex; justify-content: space-around">
   <img
     src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-10-59-29-29_ac2315b45de5759a9c997218f0c3e3c1.jpg"
     alt="#"
     style="width: 200px"
   />
-</div>
-<div style="display: flex; justify-content: space-around">
   <img
     src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-10-59-32-25_ac2315b45de5759a9c997218f0c3e3c1.jpg"
     alt="#"
@@ -44,26 +44,27 @@
     alt="#"
     style="width: 200px"
   />
-  <img
-    src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-11-00-45-73_ac2315b45de5759a9c997218f0c3e3c1.jpg"
-    alt="#"
-    style="width: 200px"
-  />
-  
-  <img
-    src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-11-04-29-79_ac2315b45de5759a9c997218f0c3e3c1.jpg"
-    alt="#"
-    style="width: 200px"
-  />
 </div>
 
 
 <div style="display: flex; justify-content: space-around">
   <img
+    src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-11-00-45-73_ac2315b45de5759a9c997218f0c3e3c1.jpg"
+    alt="#"
+    style="width: 200px"
+  />
+  <img
+    src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-11-04-29-79_ac2315b45de5759a9c997218f0c3e3c1.jpg"
+    alt="#"
+    style="width: 200px"
+  />
+  <img
     src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-11-05-41-88_ac2315b45de5759a9c997218f0c3e3c1.jpg"
     alt="#"
     style="width: 200px"
   />
+</div>
+<dev style="display: flex; justify-content: space-around">
   <img
     src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-11-06-30-78_ac2315b45de5759a9c997218f0c3e3c1.jpg"
     alt="#"
@@ -79,10 +80,7 @@
     alt="#"
     style="width: 200px"
   />
-</div>
-
-
-
+</dev>
 
 ![image-20240215194323286](https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/image-20240215194323286.png)
 
