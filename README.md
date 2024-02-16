@@ -64,7 +64,8 @@
     style="width: 200px"
   />
 </div>
-<dev style="display: flex; justify-content: space-around">
+
+<div style="display: flex; justify-content: space-around">
   <img
     src="https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/Screenshot_2024-02-15-11-06-30-78_ac2315b45de5759a9c997218f0c3e3c1.jpg"
     alt="#"
@@ -80,7 +81,7 @@
     alt="#"
     style="width: 200px"
   />
-</dev>
+</div>
 
 ![image-20240215194323286](https://image-bed-1315938829.cos.ap-nanjing.myqcloud.com/image-20240215194323286.png)
 
